@@ -1,0 +1,111 @@
+---
+# KMS Keyring
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: kms-keyring
+    base:
+      apiVersion: kms.gcp.crossplane.io/v1alpha1
+      kind: KeyRing
+      spec:
+        forProvider:
+          location: ""
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.providerConfigRef.name
+      toFieldPath: spec.providerConfigRef.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.name
+        - fromFieldPath: spec.parameters.region
+        strategy: string
+        string:
+          fmt: "%s-%s"
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.location
+      transforms:
+      - type: map
+        map:
+          us-central: us-central1
+          us-east: us-east1
+          us-west: us-west1
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.name
+      toFieldPath: status.kms.keyRing.name
+# KMS Crypto Key      
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: kms-crypto-key
+    base:
+      apiVersion: kms.gcp.crossplane.io/v1alpha1
+      kind: CryptoKey
+      spec:
+        forProvider:
+          purpose: ENCRYPT_DECRYPT
+          keyRingSelector:
+            matchControllerRef: true
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.providerConfigRef.name
+      toFieldPath: spec.providerConfigRef.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.name
+        - fromFieldPath: spec.parameters.region
+        strategy: string
+        string:
+          fmt: "%s-gke-%s"
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.name
+      toFieldPath: status.kms.cryptoKey.name
+# KMS Crypto Key Policy
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: kms-key-policy
+    base:
+      apiVersion: kms.gcp.crossplane.io/v1alpha1
+      kind: CryptoKeyPolicy
+      spec:
+        deletionPolicy: Orphan
+        forProvider:
+          cryptoKeySelector:
+            matchControllerRef: true
+          policy:
+            bindings:
+            - role: roles/cloudkms.cryptoKeyDecrypter
+            - role: roles/cloudkms.cryptoKeyEncrypter
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.providerConfigRef.name
+      toFieldPath: spec.providerConfigRef.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.projectNumber
+      toFieldPath: spec.forProvider.policy.bindings[0].members[0]
+      transforms:
+      - type: string
+        string:
+          fmt: "serviceAccount:service-%s@container-engine-robot.iam.gserviceaccount.com"
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.projectNumber
+      toFieldPath: spec.forProvider.policy.bindings[1].members[0]
+      transforms:
+      - type: string
+        string:
+          fmt: "serviceAccount:service-%s@container-engine-robot.iam.gserviceaccount.com"
+      policy:
+        fromFieldPath: Required

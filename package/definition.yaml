@@ -1,0 +1,132 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xclusters.platform.projectx.mavenwave.dev
+spec:
+  group: platform.projectx.mavenwave.dev
+  names:
+    kind: XCluster
+    plural: xclusters
+  claimNames:
+    kind: Cluster
+    plural: clusters
+  connectionSecretKeys:
+  - kubeconfig
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  providerConfigRef:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                  subnetCidr:
+                    type: string
+                    default: 10.0.0.0/24
+                  region:
+                    type: string
+                    enum:
+                    - us-central
+                    - us-east
+                    - us-west
+                  machineType:
+                    type: string
+                    enums:
+                    - small
+                    - medium
+                    default: small
+                  google:
+                    type: object
+                    properties:
+                      projectId:
+                        type: string
+                      projectNumber:
+                        type: string
+                      masterIpv4CidrBlock:
+                        type: string
+                        default: 172.16.0.0/28
+                required:
+                - region
+            required:
+            - parameters
+                  
+          status:
+            type: object
+            properties:
+              network:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: Network ID
+                  selfLink:
+                    type: string
+                    description: Network self link
+              subnetwork:
+                type: object
+                properties:
+                  selfLink:
+                    type: string
+                    description: Subnetwork self link
+                  cidr:
+                    type: string
+                    description: Subnetwork cidr
+              kms:
+                type: object
+                properties:
+                  keyRing:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                  cryptoKey:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: KMS key name
+              cluster:
+                type: object
+                properties:
+                  podIpv4Cidr:
+                    type: string
+                    description: Subnet cidr for pods
+                  servicesIpv4Cidr:
+                    type: string
+                    description: Subnet cidr for services
+                  endpoint:
+                    type: string
+                    description: Cluster endpoint
+                  selfLink:
+                    type: string
+                    description: Cluster self-link
+                  defaultNodePool:
+                    type: object
+                    properties:
+                      location:
+                        type: string
+                        description: Cluster location
+              serviceAccounts:
+                type: object
+                properties:
+                  crossplane:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                        description: Crossplane service account email
+                      name:
+                        type: string
+                        description: Crossplane service account name
+                

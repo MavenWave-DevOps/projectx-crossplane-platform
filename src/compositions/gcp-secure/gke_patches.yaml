@@ -1,0 +1,11 @@
+- op: add
+  path: /spec/resources/8/base/spec/forProvider/databaseEncryption
+  value: 
+    state: ENCRYPTED
+    
+- op: add
+  path: /spec/resources/8/patches/-1
+  value: 
+    fromFieldPath: status.kms.cryptoKey.name
+    toFieldPath: spec.forProvider.databaseEncryption.keyName
+    type: FromCompositeFieldPath

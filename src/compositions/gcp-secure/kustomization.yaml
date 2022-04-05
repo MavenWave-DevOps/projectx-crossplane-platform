@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+nameSuffix: -gcp-secure
+commonLabels:
+  provider: gcp
+  security: high
+
+resources:
+- ../../base
+
+components:
+- ../../components/gcp/network
+- ../../components/gcp/kms
+- ../../components/gcp/gke
+- ../../components/gcp/crossplane
+- ../../components/crossplane
+
+patchesJson6902:
+- target:
+    group: apiextensions.crossplane.io
+    version: v1
+    kind: Composition
+    name: cluster
+  path: gke_patches.yaml
