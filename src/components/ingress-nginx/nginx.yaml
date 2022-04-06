@@ -2,21 +2,25 @@
 - op: add
   path: /spec/resources/-1
   value:
-    name: crossplane
+    name: ingress-nginx
     base:
       apiVersion: helm.crossplane.io/v1beta1
       kind: Release
       metadata:
         annotations: 
-          crossplane.io/external-name: crossplane
+          crossplane.io/external-name: ingress-nginx
       spec:
         forProvider:
           chart:
-            name: crossplane
-            repository: https://charts.crossplane.io/stable/
-            version: 1.7.0
-          namespace: crossplane-system
+            name: ingress-nginx
+            repository: https://kubernetes.github.io/ingress-nginx
+            version: 4.0.18
+          namespace: ingress-nginx
           wait: true
+          values:
+            controller:
+              extraArgs:
+                enable-ssl-passthrough: ''
         rollbackLimit: 5
     patches:
     - type: FromCompositeFieldPath
@@ -32,4 +36,4 @@
       transforms:
       - type: string
         string:
-          fmt: "%s-crossplane"
+          fmt: "%s-ingress-nginx"

@@ -2,20 +2,20 @@
 - op: add
   path: /spec/resources/-1
   value:
-    name: crossplane
+    name: loki-stack
     base:
       apiVersion: helm.crossplane.io/v1beta1
       kind: Release
       metadata:
         annotations: 
-          crossplane.io/external-name: crossplane
+          crossplane.io/external-name: loki
       spec:
         forProvider:
           chart:
-            name: crossplane
-            repository: https://charts.crossplane.io/stable/
-            version: 1.7.0
-          namespace: crossplane-system
+            name:  loki-stack
+            repository: https://grafana.github.io/helm-charts
+            version: 2.6.2
+          namespace: loki-stack
           wait: true
         rollbackLimit: 5
     patches:
@@ -32,4 +32,4 @@
       transforms:
       - type: string
         string:
-          fmt: "%s-crossplane"
+          fmt: "%s-loki-stack"

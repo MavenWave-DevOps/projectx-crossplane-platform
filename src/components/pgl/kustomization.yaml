@@ -7,4 +7,10 @@ patchesJson6902:
     version: v1
     kind: Composition
     name: platform
-  path: network.yaml
+  path: prometheus_patch.yaml
+- target:
+    group: apiextensions.crossplane.io
+    version: v1
+    kind: Composition
+    name: platform
+  path: loki_patch.yaml

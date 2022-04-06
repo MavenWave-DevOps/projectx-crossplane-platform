@@ -6,5 +6,5 @@ patchesJson6902:
     group: apiextensions.crossplane.io
     version: v1
     kind: Composition
-    name: cluster
+    name: platform
   path: kms.yaml

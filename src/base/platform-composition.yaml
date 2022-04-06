@@ -1,13 +1,13 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: cluster
+  name: platform
   labels:
-    crossplane.io/xrd: xclusters.platform.projectx.mavenwave.dev
+    crossplane.io/xrd: xplatforms.platform.projectx.mavenwave.dev
 spec:
   compositeTypeRef:
-    apiVersion: platform.projectx.mavenwave.dev/v1alpha1
-    kind: XCluster
+    apiVersion: projectx.mavenwave.dev/v1alpha1
+    kind: XPlatform
   writeConnectionSecretsToNamespace: crossplane-system
   resources: []
   patchSets:
