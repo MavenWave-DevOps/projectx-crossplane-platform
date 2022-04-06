@@ -1,15 +1,15 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
-  name: xclusters.platform.projectx.mavenwave.dev
+  name: xplatforms.projectx.mavenwave.dev
 spec:
-  group: platform.projectx.mavenwave.dev
+  group: projectx.mavenwave.dev
   names:
-    kind: XCluster
-    plural: xclusters
+    kind: XPlatform
+    plural: xplatforms
   claimNames:
-    kind: Cluster
-    plural: clusters
+    kind: Platform
+    plural: platforms
   connectionSecretKeys:
   - kubeconfig
   versions:
@@ -26,11 +26,6 @@ spec:
               parameters:
                 type: object
                 properties:
-                  providerConfigRef:
-                    type: object
-                    properties:
-                      name:
-                        type: string
                   subnetCidr:
                     type: string
                     default: 10.0.0.0/24
@@ -46,6 +41,27 @@ spec:
                     - small
                     - medium
                     default: small
+                  argo:
+                    type: object
+                    properties:
+                      namespaces:
+                        type: array
+                        items:
+                          type: string
+                  argocd:
+                    type: object
+                    properties:
+                      admins:
+                        type: array
+                        items:
+                          type: string
+                      host:
+                        type: string
+                      repo:
+                        type: string
+                      path:
+                        type: string
+                        default: apps
                   google:
                     type: object
                     properties:
@@ -129,4 +145,13 @@ spec:
                       name:
                         type: string
                         description: Crossplane service account name
+                  externalDns:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                        description: External DNS service account email
+                      name:
+                        type: string
+                        description: External DNS service account name
                 

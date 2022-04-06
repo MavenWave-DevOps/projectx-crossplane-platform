@@ -17,7 +17,7 @@
     - type: PatchSet
       patchSetName: metadata
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.providerConfigRef.name
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
@@ -52,7 +52,7 @@
     - type: PatchSet
       patchSetName: metadata
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.providerConfigRef.name
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
@@ -101,8 +101,11 @@
       transforms:
       - type: string
         string:
-          fmt: "%s-gke"
+          fmt: "%s-cluster"
       toFieldPath: spec.providerConfigRef.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: status.serviceAccounts.crossplane.email
+      toFieldPath: spec.forProvider.manifest.metadata.annotations[iam.gke.io/gcp-service-account]
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: metadata.name
@@ -110,40 +113,40 @@
       - type: string
         string:
           fmt: "%s-crossplane-gcp-provider"
-# # Crossplane GCP Controller Config
-# - op: add
-#   path: /spec/resources/-1
-#   value:
-#     name: gcp-crossplane-provider-config
-#     base:
-#       apiVersion: kubernetes.crossplane.io/v1alpha1
-#       kind: Object
-#       spec:
-#         forProvider:
-#           manifest:
-#             apiVersion: pkg.crossplane.io/v1alpha1
-#             kind: ControllerConfig
-#             metadata:
-#               name: gcp-provider
-#             spec:
-#               serviceAccountName: gcp-provider
-#     patches:
-#     - type: PatchSet
-#       patchSetName: metadata
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: metadata.name
-#       toFieldPath: spec.providerConfigRef.name
-#       transforms:
-#       - type: string
-#         string:
-#           fmt: "%s-gke"
-#     - type:  FromCompositeFieldPath
-#       fromFieldPath: metadata.name
-#       toFieldPath: metadata.name
-#       transforms:
-#       - type: string
-#         string:
-#           fmt: "%s-gcp-crossplane-provider-config"
+# Crossplane GCP Controller Config
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: gcp-crossplane-provider-config
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: pkg.crossplane.io/v1alpha1
+            kind: ControllerConfig
+            metadata:
+              name: gcp-provider
+            spec:
+              serviceAccountName: gcp-provider
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.providerConfigRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-cluster"
+    - type:  FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-gcp-crossplane-provider-config"
 # # Crossplane GCP Provider
 # - op: add
 #   path: /spec/resources/-1
@@ -172,7 +175,7 @@
 #       transforms:
 #       - type: string
 #         string:
-#           fmt: "%s-gke"
+#           fmt: "%s-cluster"
 #     - type:  FromCompositeFieldPath
 #       fromFieldPath: metadata.name
 #       toFieldPath: metadata.name
@@ -210,7 +213,7 @@
 #       transforms:
 #       - type: string
 #         string:
-#           fmt: "%s-gke"
+#           fmt: "%s-cluster"
 #     - type:  FromCompositeFieldPath
 #       fromFieldPath: metadata.name
 #       toFieldPath: metadata.name
@@ -244,7 +247,7 @@
       transforms:
       - type: string
         string:
-          fmt: "%s-gke"
+          fmt: "%s-cluster"
     - type:  FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: metadata.name
@@ -287,7 +290,7 @@
       transforms:
       - type: string
         string:
-          fmt: "%s-gke"
+          fmt: "%s-cluster"
     - type:  FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: metadata.name
@@ -295,40 +298,40 @@
       - type: string
         string:
           fmt: "%s-crossplane-provider-rb"
-# # Crossplane Kubernetes Controller Config
-# - op: add
-#   path: /spec/resources/-1
-#   value:
-#     name: kubernetes-crossplane-provider-config
-#     base:
-#       apiVersion: kubernetes.crossplane.io/v1alpha1
-#       kind: Object
-#       spec:
-#         forProvider:
-#           manifest:
-#             apiVersion: pkg.crossplane.io/v1alpha1
-#             kind: ControllerConfig
-#             metadata:
-#               name: kubernetes-provider
-#             spec:
-#               serviceAccountName: kubernetes-provider
-#     patches:
-#     - type: PatchSet
-#       patchSetName: metadata
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: metadata.name
-#       toFieldPath: spec.providerConfigRef.name
-#       transforms:
-#       - type: string
-#         string:
-#           fmt: "%s-gke"
-#     - type:  FromCompositeFieldPath
-#       fromFieldPath: metadata.name
-#       toFieldPath: metadata.name
-#       transforms:
-#       - type: string
-#         string:
-#           fmt: "%s-kubernetes-crossplane-provider-config"
+# Crossplane Kubernetes Controller Config
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: kubernetes-crossplane-provider-config
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: pkg.crossplane.io/v1alpha1
+            kind: ControllerConfig
+            metadata:
+              name: kubernetes-provider
+            spec:
+              serviceAccountName: kubernetes-provider
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.providerConfigRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-cluster"
+    - type:  FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-kubernetes-crossplane-provider-config"
 # # Crossplane Kubernetes Provider
 # - op: add
 #   path: /spec/resources/-1
@@ -357,7 +360,7 @@
 #       transforms:
 #       - type: string
 #         string:
-#           fmt: "%s-gke"
+#           fmt: "%s-cluster"
 #     - type:  FromCompositeFieldPath
 #       fromFieldPath: metadata.name
 #       toFieldPath: metadata.name
@@ -393,7 +396,7 @@
 #       transforms:
 #       - type: string
 #         string:
-#           fmt: "%s-gke"
+#           fmt: "%s-cluster"
 #     - type:  FromCompositeFieldPath
 #       fromFieldPath: metadata.name
 #       toFieldPath: metadata.name
@@ -401,3 +404,39 @@
 #       - type: string
 #         string:
 #           fmt: "%s-helm-crossplane-provider"
+# # Crossplane ProjectX Platform Provider
+# - op: add
+#   path: /spec/resources/-1
+#   value:
+#     name: platform-crossplane-provider
+#     base:
+#       apiVersion: kubernetes.crossplane.io/v1alpha1
+#       kind: Object
+#       spec:
+#         forProvider:
+#           manifest:
+#             apiVersion: pkg.crossplane.io/v1
+#             kind: Configuration
+#             metadata:
+#               name: platform-projectx-provider
+#             spec:
+#     patches:
+#     - type: PatchSet
+#       patchSetName: metadata
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: spec.providerConfigRef.name
+#       transforms:
+#       - type: string
+#         string:
+#           fmt: "%s-cluster"
+#     - type:  FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: metadata.name
+#       transforms:
+#       - type: string
+#         string:
+#           fmt: "%s-projectx-platform-crossplane-provider"
+#     - type:  FromCompositeFieldPath
+#       fromFieldPath: spe.parameters.platform.package
+#       toFieldPath: spec.package

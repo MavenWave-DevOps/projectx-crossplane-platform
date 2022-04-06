@@ -1,0 +1,22 @@
+---
+apiVersion: projectx.mavenwave.dev/v1alpha1
+kind: Platform
+metadata:
+  name: devops-controller
+spec:
+  compositionSelector:
+    matchLabels:
+      provider: gcp
+      security: high
+      gitops: argocd
+  parameters:
+    region: us-central
+    machineType: small
+    google:
+      projectId: 
+      projectNumber: 
+    argocd:
+      repo:
+      path:
+  writeConnectionSecretToRef:
+    name: devops-controller-cluster

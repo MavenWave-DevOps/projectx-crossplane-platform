@@ -14,7 +14,7 @@
     - type: PatchSet
       patchSetName: metadata
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.providerConfigRef.name
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.providerConfigRef.name
     - type: CombineFromComposite
       combine:
@@ -54,7 +54,7 @@
     - type: PatchSet
       patchSetName: metadata
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.providerConfigRef.name
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.providerConfigRef.name
     - type: CombineFromComposite
       combine:
@@ -89,7 +89,7 @@
     - type: PatchSet
       patchSetName: metadata
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.providerConfigRef.name
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.projectNumber

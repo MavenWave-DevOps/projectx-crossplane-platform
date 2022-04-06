@@ -2,21 +2,23 @@
 - op: add
   path: /spec/resources/-1
   value:
-    name: crossplane
+    name: argo-events
     base:
       apiVersion: helm.crossplane.io/v1beta1
       kind: Release
       metadata:
         annotations: 
-          crossplane.io/external-name: crossplane
+          crossplane.io/external-name: argo-events
       spec:
         forProvider:
           chart:
-            name: crossplane
-            repository: https://charts.crossplane.io/stable/
-            version: 1.7.0
-          namespace: crossplane-system
+            name: argo-events
+            repository: https://argoproj.github.io/argo-helm
+            version: 1.12.0
+          namespace: argo-events
           wait: true
+          values:
+            singleNamespace: false
         rollbackLimit: 5
     patches:
     - type: FromCompositeFieldPath
@@ -32,4 +34,7 @@
       transforms:
       - type: string
         string:
-          fmt: "%s-crossplane"
+          fmt: "%s-argo-events"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.argo.namespaces
+      toFieldPath: spec.forProvider.values.additionalSaNamespaces

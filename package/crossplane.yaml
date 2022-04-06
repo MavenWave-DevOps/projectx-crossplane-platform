@@ -1,7 +1,7 @@
 apiVersion: meta.pkg.crossplane.io/v1
 kind: Configuration
 metadata:
-  name: projectx-cluster
+  name: projectx-platform
 spec:
   crossplane:
     version: ">=v1.7.0"
