@@ -2,20 +2,23 @@
 - op: add
   path: /spec/resources/-1
   value:
-    name: crossplane
+    name: cert-manager
     base:
       apiVersion: helm.crossplane.io/v1beta1
       kind: Release
       metadata:
         annotations: 
-          crossplane.io/external-name: crossplane
+          crossplane.io/external-name: cert-manager
       spec:
         forProvider:
           chart:
-            name: crossplane
-            repository: https://charts.crossplane.io/stable/
-            version: 1.7.0
-          namespace: crossplane-system
+            name: cert-manager
+            repository: https://charts.jetstack.io
+            version: v1.7.1
+          namespace: cert-manager
+          set:
+          - name: installCRDs
+            value: "true"
           wait: true
         rollbackLimit: 5
     patches:
@@ -32,4 +35,4 @@
       transforms:
       - type: string
         string:
-          fmt: "%s-crossplane"
+          fmt: "%s-cert-manager"
