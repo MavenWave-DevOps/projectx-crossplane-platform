@@ -2,21 +2,24 @@
 - op: add
   path: /spec/resources/-1
   value:
-    name: crossplane
+    name: argo-workflows
     base:
       apiVersion: helm.crossplane.io/v1beta1
       kind: Release
       metadata:
         annotations: 
-          crossplane.io/external-name: crossplane
+          crossplane.io/external-name: argo-workflows
       spec:
         forProvider:
           chart:
-            name: crossplane
-            repository: https://charts.crossplane.io/stable/
-            version: 1.7.0
-          namespace: crossplane-system
+            name: argo-workflows
+            repository: https://argoproj.github.io/argo-helm
+            version: 0.13.0
+          namespace: argo
           wait: true
+          values:
+            server:
+              secure: true
         rollbackLimit: 5
     patches:
     - type: FromCompositeFieldPath
@@ -32,4 +35,7 @@
       transforms:
       - type: string
         string:
-          fmt: "%s-crossplane"
+          fmt: "%s-argo-workflows"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.argo.namespaces
+      toFieldPath: spec.forProvider.values.controller.workflowNamespaces

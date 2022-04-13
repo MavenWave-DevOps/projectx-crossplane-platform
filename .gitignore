@@ -1,0 +1,4 @@
+hacking/provider/overlays/local/*
+hacking/examples/overlays/local/*
+**kubeconfig
+**.xpkg

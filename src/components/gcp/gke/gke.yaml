@@ -37,7 +37,7 @@
           fmt: "%s-gke-intra-cluster-egress"
       toFieldPath: metadata.annotations[crossplane.io/external-name]
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.providerConfigRef.name
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.masterIpv4CidrBlock
@@ -88,7 +88,7 @@
           fmt: "%s-gke-webhooks"
       toFieldPath: metadata.annotations[crossplane.io/external-name]
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.providerConfigRef.name
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.masterIpv4CidrBlock
@@ -110,7 +110,7 @@
         forProvider:
           addonsConfig:
             configConnectorConfig:
-              enabled: false
+              enabled: true
             gcePersistentDiskCSIDriverConfig:
               enabled: true
             horizontalPodAutoscaling:
@@ -144,12 +144,11 @@
             channel: STABLE
           subnetworkSelector:
             matchControllerRef: true
-          workloadIdentityConfig:
     patches:
     - type: PatchSet
       patchSetName: metadata
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.providerConfigRef.name
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
@@ -157,7 +156,7 @@
       transforms:
       - type: string
         string:
-          fmt: "%s-gke"
+          fmt: "%s-cluster"
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: spec.forProvider.description
@@ -248,7 +247,7 @@
     - type: PatchSet
       patchSetName: metadata
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.providerConfigRef.name
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.machineType
@@ -292,14 +291,14 @@
       transforms:
       - type: string
         string:
-          fmt: "%s-gke"
+          fmt: "%s-cluster"
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: spec.credentials.secretRef.name
       transforms:
       - type: string
         string:
-          fmt: "%s-gke"
+          fmt: "%s-cluster"
     - type: FromCompositeFieldPath
       fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.identity.secretRef.namespace
@@ -335,14 +334,14 @@
       transforms:
       - type: string
         string:
-          fmt: "%s-gke"
+          fmt: "%s-cluster"
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: spec.credentials.secretRef.name
       transforms:
       - type: string
         string:
-          fmt: "%s-gke"
+          fmt: "%s-cluster"
     - type: FromCompositeFieldPath
       fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.identity.secretRef.namespace

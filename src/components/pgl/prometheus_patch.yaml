@@ -2,20 +2,20 @@
 - op: add
   path: /spec/resources/-1
   value:
-    name: crossplane
+    name: prometheus-stack
     base:
       apiVersion: helm.crossplane.io/v1beta1
       kind: Release
       metadata:
         annotations: 
-          crossplane.io/external-name: crossplane
+          crossplane.io/external-name: kube-prometheus-stack
       spec:
         forProvider:
           chart:
-            name: crossplane
-            repository: https://charts.crossplane.io/stable/
-            version: 1.7.0
-          namespace: crossplane-system
+            name:  kube-prometheus-stack
+            repository: https://prometheus-community.github.io/helm-charts
+            version: 34.1.1
+          namespace: prometheus-stack
           wait: true
         rollbackLimit: 5
     patches:
@@ -32,4 +32,4 @@
       transforms:
       - type: string
         string:
-          fmt: "%s-crossplane"
+          fmt: "%s-kube-prometheus-stack"

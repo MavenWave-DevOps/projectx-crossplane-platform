@@ -2,20 +2,20 @@
 - op: add
   path: /spec/resources/-1
   value:
-    name: crossplane
+    name: argo-rollouts
     base:
       apiVersion: helm.crossplane.io/v1beta1
       kind: Release
       metadata:
         annotations: 
-          crossplane.io/external-name: crossplane
+          crossplane.io/external-name: argo-rollouts
       spec:
         forProvider:
           chart:
-            name: crossplane
-            repository: https://charts.crossplane.io/stable/
-            version: 1.7.0
-          namespace: crossplane-system
+            name: argo-rollouts
+            repository: https://argoproj.github.io/argo-helm
+            version: 2.11.0
+          namespace: argo-rollouts
           wait: true
         rollbackLimit: 5
     patches:
@@ -32,4 +32,4 @@
       transforms:
       - type: string
         string:
-          fmt: "%s-crossplane"
+          fmt: "%s-argo-rollouts"

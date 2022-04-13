@@ -16,7 +16,7 @@
     - type: PatchSet
       patchSetName: metadata
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.providerConfigRef.name
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
@@ -55,7 +55,7 @@
           fmt: "%s-gke"
       toFieldPath: metadata.annotations[crossplane.io/external-name]
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.providerConfigRef.name
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.region
@@ -103,7 +103,7 @@
           fmt: "%s-%s"
       toFieldPath: metadata.annotations[crossplane.io/external-name]
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.providerConfigRef.name
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.region
