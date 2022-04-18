@@ -15,3 +15,6 @@ spec:
     patches:
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.labels
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.namespace
+      toFieldPath: metadata.labels['tenant']

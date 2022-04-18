@@ -148,6 +148,9 @@
     - type: PatchSet
       patchSetName: metadata
     - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+    - type: FromCompositeFieldPath
       fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
@@ -195,6 +198,9 @@
     - type: ToCompositeFieldPath
       fromFieldPath: status.atProvider.servicesIpv4Cidr
       toFieldPath: status.cluster.servicesIpv4Cidr
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.location
+      toFieldPath: status.cluster.location
     connectionDetails:
     - fromConnectionSecretKey: kubeconfig
     readinessChecks:
