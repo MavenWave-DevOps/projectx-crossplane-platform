@@ -6,9 +6,8 @@ metadata:
 spec:
   compositionSelector:
     matchLabels:
-      provider: gcp
+      provider: vcluster
       security: high
-      gitops: argocd
   parameters:
     region: us-central
     machineType: small
