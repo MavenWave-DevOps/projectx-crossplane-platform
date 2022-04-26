@@ -72,6 +72,11 @@ spec:
                       masterIpv4CidrBlock:
                         type: string
                         default: 172.16.0.0/28
+                  vcluster:
+                    type: object
+                    properties:
+                      host:
+                        type: string
                 required:
                 - region
             required:
@@ -115,6 +120,9 @@ spec:
               cluster:
                 type: object
                 properties:
+                  location:
+                    type: string
+                    description: Cluster location
                   podIpv4Cidr:
                     type: string
                     description: Subnet cidr for pods
