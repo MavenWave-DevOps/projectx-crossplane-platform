@@ -1,0 +1,74 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: projectx-gcp-gke-subnetwork
+  labels:
+    crossplane.io/xrd: xgkesubnetworks.gcp.projectx.mavenwave.dev
+spec:
+  compositeTypeRef:
+    apiVersion: gcp.projectx.mavenwave.dev/v1alpha1
+    kind: XGkeSubnetwork
+  writeConnectionSecretsToNamespace: crossplane-system
+  patchSets:
+  - name: common
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.labels
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.id
+      toFieldPath: metadata.labels[xnetworks.projectx.mavenwave.dev/network-id]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.namespace
+      toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/tenant]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.providerConfigRef.name
+      toFieldPath: spec.providerConfigRef.name
+  resources:
+  # Subnetwork
+  - name: subnetwork
+    base:
+      apiVersion: compute.gcp.crossplane.io/v1beta1
+      kind: Subnetwork
+      spec:
+        forProvider:
+          networkSelector:
+            matchLables:
+          privateIPGoogleAccess: true
+          secondaryIpRanges:
+          - rangeName: pods
+            ipCidrRange:
+          - rangeName: services
+            ipCidrRange:
+    patches:
+    - type: PatchSet
+      patchSetName: common
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.name
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.network.id
+      toFieldPath: spec.forProvider.networkSelector.matchLabels[xnetworks.projectx.mavenwave.dev/network-id]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.region
+      transforms:
+      - type: map
+        map:
+          us-central: us-central1
+          us-east: us-east1
+          us-west: us-west1
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.nodes.cidr
+      toFieldPath: spec.forProvider.ipCidrRange
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.pods.cidr
+      toFieldPath: spec.forProvider.secondaryIpRanges[0].ipCidrRange
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.services.cidr
+      toFieldPath: spec.forProvider.secondaryIpRanges[1].ipCidrRange
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.selfLink
+      toFieldPath: status.subnetwork.selfLink
+    - type: ToCompositeFieldPath
+      fromFieldPath: spec.forProvider.ipCidrRange
+      toFieldPath: status.subnetwork.cidr

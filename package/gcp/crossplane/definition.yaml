@@ -1,0 +1,60 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xcrossplane.gcp.projectx.mavenwave.dev
+spec:
+  group: gcp.projectx.mavenwave.dev
+  names:
+    kind: XCrossplane
+    plural: xcrossplane
+  claimNames:
+    kind: Crossplane
+    plural: crossplane
+  connectionSecretKeys:
+  - kubeconfig
+  defaultCompositionRef:
+    name: projectx-gcp-crossplane
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  providerConfigRef:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Provider config for resources
+                    required:
+                    - name
+                  projectId:
+                    type: string
+                    description: Google project ID
+                required:
+                - providerConfigRef
+                - projectId
+            required:
+            - parameters
+                  
+          status:
+            type: object
+            properties:
+              serviceAccounts:
+                type: object
+                properties:
+                  crossplane:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                      name:
+                        type: string

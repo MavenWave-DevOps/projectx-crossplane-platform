@@ -92,7 +92,7 @@
       fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.google.projectNumber
+      fromFieldPath: spec.parameters.gcp.projectNumber
       toFieldPath: spec.forProvider.policy.bindings[0].members[0]
       transforms:
       - type: string
@@ -101,7 +101,7 @@
       policy:
         fromFieldPath: Required
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.google.projectNumber
+      fromFieldPath: spec.parameters.gcp.projectNumber
       toFieldPath: spec.forProvider.policy.bindings[1].members[0]
       transforms:
       - type: string

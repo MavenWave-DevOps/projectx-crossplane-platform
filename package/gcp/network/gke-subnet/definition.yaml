@@ -1,0 +1,100 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xgkesubnetworks.gcp.projectx.mavenwave.dev
+spec:
+  group: gcp.projectx.mavenwave.dev
+  names:
+    kind: XGkeSubnetwork
+    plural: xgkesubnetworks
+  claimNames:
+    kind: GkeSubnetwork
+    plural: gkesubnetworks
+  defaultCompositionRef:
+    name: projectx-gcp-gke-subnetwork
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  providerConfigRef:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Provider config for resources
+                    required:
+                    - name
+                  id:
+                    type: string
+                    description: Referenceable id for resources
+                  network:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: ID of VPC to attach
+                    required:
+                    - id
+                  region:
+                    type: string
+                    enum:
+                    - us-central
+                    - us-east
+                    - us-west
+                    default: us-central
+                    description: Subnet region
+                  nodes:
+                    type: object
+                    properties:
+                      cidr:
+                        type: string
+                        description: Nodes subnet CIDR
+                    required:
+                    - cidr
+                  pods:
+                    type: object
+                    properties:
+                      cidr:
+                        type: string
+                        description: Pods subnet CIDR
+                    required:
+                    - cidr
+                  services:
+                    type: object
+                    properties:
+                      cidr:
+                        type: string
+                        description: Services subnet CIDR
+                    required:
+                    - cidr
+                required:
+                - providerConfigRef
+                - id
+                - network
+                - nodes
+                - pods
+                - services
+            required:
+            - parameters
+                  
+          status:
+            type: object
+            properties:
+              type: object
+              properties:
+                selfLink:
+                  type: string
+                  description: Subnetwork self link
+                cidr:
+                  type: string
+                  description: Subnetwork cidr

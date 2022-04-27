@@ -6,5 +6,4 @@ patchesJson6902:
     group: apiextensions.crossplane.io
     version: v1
     kind: Composition
-    name: platform
-  path: network.yaml
+  path: vpc.yaml

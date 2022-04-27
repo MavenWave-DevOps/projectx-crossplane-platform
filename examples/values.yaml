@@ -1,0 +1,9 @@
+provider:
+  packages:
+  - crossplane/provider-gcp:v0.21.0
+  - crossplane/provider-kubernetes:v0.3.0
+  - crossplane/provider-helm:v0.10.0
+  # - crossplane/provider-jet-gcp:v0.2.0-preview
+# configuration:
+#   packages:
+#   - us.gcr.io/bradw-nextgen-devops/projectx-platform:latest

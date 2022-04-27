@@ -2,11 +2,15 @@ name: ci
 
 on:
   push:
+    paths-ignore:
+    - '**.md'
     branches:
       - 'main'
     tags:
       - 'v*'
   pull_request:
+    paths-ignore:
+    - '**.md'
     branches:
       - 'main'
 
@@ -17,20 +21,9 @@ env:
 jobs:
   package:
     runs-on: ubuntu-latest
-    # container:
-    #   image: ghcr.io/mavenwave-devops/projectx-crossplane-tools:0.1
-    #   volumes:
-    #     - /var/run/docker.sock:/var/run/docker.sock
     steps:
     - run: |
         cd /usr/local/bin
-        if [ ! -f  kubectl ]; then
-          sudo curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          sudo chmod +x kubectl
-        fi
-        if [ ! -f  kustomize ]; then
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | sudo bash
-        fi
         if [ ! -f  kubectl-crossplane ]; then
           curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | sudo sh
         fi
@@ -64,10 +57,8 @@ jobs:
           type=semver,pattern={{major}}.{{minor}}
           type=sha
     
-    - run: |
-        mkdir -p build
-        for i in crossplane.yaml definition.yaml; do cp package/$i build/$i; done
-        for i in $(ls src/compositions); do kustomize build src/compositions/$i > build/$i-composition.yaml; done
-        cd build
+    - name: Build Crossplane Packages
+      run: |
+        cd package
         kubectl crossplane build configuration
         for i in $(echo ${{ steps.meta.outputs.tags }} | tr "," " "); do kubectl crossplane push configuration $i; done
