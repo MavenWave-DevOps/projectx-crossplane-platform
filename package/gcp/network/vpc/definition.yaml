@@ -1,0 +1,57 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xnetworks.gcp.projectx.mavenwave.dev
+spec:
+  group: gcp.projectx.mavenwave.dev
+  names:
+    kind: XNetwork
+    plural: xnetworks
+  claimNames:
+    kind: Network
+    plural: networks
+  defaultCompositionRef:
+    name: projectx-gcp-network
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  providerConfigRef:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Provider config for resources
+                    required:
+                    - name
+                  id:
+                    type: string
+                    description: Referenceable id for resources
+                  description:
+                    type: string
+                    description: Description on network
+                required:
+                - providerConfigRef
+                - id
+            required:
+            - parameters
+                  
+          status:
+            type: object
+            properties:
+              id:
+                type: integer
+                description: Network ID
+              selfLink:
+                type: string
+                description: Network self link

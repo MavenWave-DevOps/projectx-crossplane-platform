@@ -1,0 +1,82 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xgkefirewalls.gcp.projectx.mavenwave.dev
+spec:
+  group: gcp.projectx.mavenwave.dev
+  names:
+    kind: XGkeFirewall
+    plural: xgkefirewalls
+  claimNames:
+    kind: GkeFirewall
+    plural: gkefirewalls
+  defaultCompositionRef:
+    name: projectx-gcp-gke-firewalls
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  providerConfigRef:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Provider config for resources
+                    required:
+                    - name
+                  id:
+                    type: string
+                    description: Referenceable id for resources
+                  network:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: ID of VPC to attach
+                    required:
+                    - id
+                  masterIpv4CidrBlock:
+                    type: string
+                    description: Cidr block for GKE control-plane
+                    default: 172.16.0.0/28
+                  nodes:
+                    type: object
+                    properties:
+                      cidr:
+                        type: string
+                        description: Node subnet CIDR
+                      tag:
+                        type: string
+                        description: Node network tag
+                    required:
+                    - cidr
+                    - tag
+                  pods:
+                    type: object
+                    properties:
+                      cidr:
+                        type: string
+                        description: Pod subnet CIDR
+                    required:
+                    - cidr
+                required:
+                - providerConfigRef
+                - id
+                - nodes
+                - pods
+            required:
+            - parameters
+                  
+          status:
+            type: object
+            properties:
