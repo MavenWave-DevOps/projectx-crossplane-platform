@@ -1,0 +1,115 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xtenants.platform.projectx.mavenwave.dev
+spec:
+  group: platform.projectx.mavenwave.dev
+  names:
+    kind: XTenant
+    plural: xtenants
+  # claimNames:
+  #   kind: Tenant
+  #   plural: tenants
+  defaultCompositionRef:
+    name: projectx-platform-tenant
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  providerConfigRef:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                    required:
+                    - name
+                  namespace:
+                    type: object
+                    properties:
+                      labels:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        type: object
+                  rbac:
+                    type: object
+                    properties:
+                      labels:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      admins:
+                        type: object
+                        properties:
+                          subjects:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                apiGroup:
+                                  type: string
+                                kind:
+                                  type: string
+                                name:
+                                  type: string
+                                namespace:
+                                  type: string
+                      viewers:
+                        type: object
+                        properties:
+                          subjects:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                apiGroup:
+                                  type: string
+                                kind:
+                                  type: string
+                                name:
+                                  type: string
+                                namespace:
+                                  type: string
+                  serviceAccounts:
+                    type: object
+                    properties:
+                      labels:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      imagePullSecrets:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                required:
+                - providerConfigRef
+            required:
+            - parameters
+                  
+          status:
+            type: object
+            properties:

@@ -1,0 +1,29 @@
+---
+apiVersion: gcp.projectx.mavenwave.dev/v1alpha1
+kind: SimpleCluster
+metadata:
+  name: devops-controller
+spec: 
+  parameters:
+    gcp:
+      projectId: bradw-nextgen-devops
+      projectNumber: "809429613600"
+---
+apiVersion: services.projectx.mavenwave.dev/v1alpha1
+kind: Crossplane
+metadata:
+  name: devops-controller
+spec: 
+  parameters:
+    providerConfigRef:
+      name: bradw-devops-controller-cluster
+---
+apiVersion: gcp.projectx.mavenwave.dev/v1alpha1
+kind: Crossplane
+metadata:
+  name: devops-controller
+spec: 
+  parameters:
+    providerConfigRef:
+      name: bradw-devops-controller-cluster
+    projectId: bradw-nextgen-devops

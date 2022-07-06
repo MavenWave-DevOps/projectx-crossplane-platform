@@ -1,0 +1,137 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: projectx-gcp-gke-cluster
+  labels:
+    crossplane.io/xrd: xclusters.gcp.projectx.mavenwave.dev
+spec:
+  compositeTypeRef:
+    apiVersion: gcp.projectx.mavenwave.dev/v1alpha1
+    kind: XCluster
+  writeConnectionSecretsToNamespace: crossplane-system
+  patchSets:
+  - name: common
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.labels
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.id
+      toFieldPath: metadata.labels[xnetworks.projectx.mavenwave.dev/cluster-id]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.namespace
+      toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/tenant]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.providerConfigRef.name
+      toFieldPath: spec.providerConfigRef.name
+  resources:
+  # GKE Cluster
+  - name: cluster
+    base:
+      apiVersion: container.gcp.crossplane.io/v1beta2
+      kind: Cluster
+      spec:
+        forProvider:
+          addonsConfig:
+            configConnectorConfig:
+              enabled: true
+            gcePersistentDiskCSIDriverConfig:
+              enabled: true
+            horizontalPodAutoscaling:
+              disabled: false
+            httpLoadBalancing:
+              disabled: false
+          binaryAuthorization:
+            enabled: true
+          databaseEncryption:
+            state:
+            keyName:
+          initialClusterVersion: latest
+          ipAllocationPolicy:
+            clusterSecondaryRangeName: pods
+            servicesSecondaryRangeName: services
+            useIpAliases: true
+          maintenancePolicy:
+            window:
+              dailyMaintenanceWindow:
+                startTime: 06:00
+          masterAuthorizedNetworksConfig:
+            enabled:
+            cidrBlocks: []
+          networkConfig:
+            enableIntraNodeVisibility: true
+            datapathProvider: ADVANCED_DATAPATH
+          networkSelector:
+            matchLabels:
+          privateClusterConfig:
+            masterIpv4CidrBlock:
+            enablePrivateNodes: true
+          releaseChannel:
+            channel: STABLE
+          subnetworkSelector:
+            matchLabels:
+    patches:
+    - type: PatchSet
+      patchSetName: common
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.name
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.region
+      toFieldPath: spec.forProvider.location
+      transforms:
+      - type: map
+        map:
+          us-central: us-central1
+          us-east: us-east1
+          us-west: us-west1
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.databaseEncryption.state
+      toFieldPath: spec.forProvider.databaseEncryption.state
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.authorizedNetworks.enabled
+      toFieldPath: spec.forProvider.masterAuthorizedNetworksConfig.enabled
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.authorizedNetworks.cidrBlocks
+      toFieldPath: spec.forProvider.masterAuthorizedNetworksConfig.cidrBlocks
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.databaseEncryption.keyName
+      toFieldPath: spec.forProvider.databaseEncryption.keyName
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.masterIpv4CidrBlock
+      toFieldPath: spec.forProvider.privateClusterConfig.masterIpv4CidrBlock
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.projectId
+      toFieldPath: spec.forProvider.workloadIdentityConfig.workloadPool
+      transforms:
+      - type: string
+        string:
+          fmt: "%s.svc.id.goog"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.network.id
+      toFieldPath: spec.forProvider.networkSelector.matchLabels[xnetworks.projectx.mavenwave.dev/network-id]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.network.id
+      toFieldPath: spec.forProvider.subnetworkSelector.matchLabels[xnetworks.projectx.mavenwave.dev/network-id]
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.endpoint
+      toFieldPath: status.cluster.endpoint
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.selfLink
+      toFieldPath: status.cluster.selfLink
+    - type: ToCompositeFieldPath
+      fromFieldPath: spec.forProvider.clusterIpv4Cidr
+      toFieldPath: status.cluster.podIpv4Cidr
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.servicesIpv4Cidr
+      toFieldPath: status.cluster.servicesIpv4Cidr
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.location
+      toFieldPath: status.cluster.location
+    connectionDetails:
+    - name: kubeconfig
+      fromConnectionSecretKey: kubeconfig
+    readinessChecks:
+    - type: MatchString
+      fieldPath: "status.atProvider.status"
+      matchString: "RUNNING"
+  

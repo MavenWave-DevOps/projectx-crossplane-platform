@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: bradw
+
+resources:
+- ../../base
+
+patchesStrategicMerge:
+- app_team_patches.yaml
+- provider_patches.yaml
+
+patchesJson6902:
+- target:
+    group: gcp.crossplane.io
+    version: v1beta1
+    kind: ProviderConfig
+    name: default
+  patch: |-
+    - op: replace
+      path: /metadata/name
+      value: bradw
