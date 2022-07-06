@@ -1,0 +1,19 @@
+---
+apiVersion: gcp.projectx.mavenwave.dev/v1alpha1
+kind: SimpleCluster
+metadata:
+  name: app-team-a
+spec: 
+  parameters:
+    gcp:
+      projectId: bradw-nextgen-devops
+      projectNumber: "809429613600"
+---
+apiVersion: services.projectx.mavenwave.dev/v1alpha1
+kind: Crossplane
+metadata:
+  name: app-team-a
+spec: 
+  parameters:
+    providerConfigRef:
+      name: bradw-app-team-a-cluster
