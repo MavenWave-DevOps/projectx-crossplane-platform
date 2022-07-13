@@ -1,0 +1,13 @@
+---
+apiVersion: services.projectx.mavenwave.dev/v1alpha1
+kind: XIngressNginx
+metadata:
+  name: app-team1
+spec: 
+  parameters:
+    providerConfigRef:
+      name: in-cluster
+    values:
+      controller:
+        extraArgs:
+          enable-ssl-passthrough: ''

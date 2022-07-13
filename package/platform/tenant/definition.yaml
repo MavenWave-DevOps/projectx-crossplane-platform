@@ -1,17 +1,12 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
-  name: xtenants.platform.projectx.mavenwave.dev
+  name: tenants.platform.projectx.mavenwave.dev
 spec:
   group: platform.projectx.mavenwave.dev
   names:
-    kind: XTenant
-    plural: xtenants
-  # claimNames:
-  #   kind: Tenant
-  #   plural: tenants
-  defaultCompositionRef:
-    name: projectx-platform-tenant
+    kind: Tenant
+    plural: tenants
   versions:
   - name: v1alpha1
     served: true
@@ -22,9 +17,13 @@ spec:
         properties:
           spec:
             type: object
+            required:
+            - parameters
             properties:
               parameters:
                 type: object
+                required:
+                - providerConfigRef
                 properties:
                   providerConfigRef:
                     type: object
@@ -33,83 +32,28 @@ spec:
                         type: string
                     required:
                     - name
-                  namespace:
+                  google:
                     type: object
+                    required:
+                    - project
                     properties:
-                      labels:
-                        additionalProperties:
-                          type: string
+                      project:
                         type: object
-                      annotations:
-                        additionalProperties:
-                          type: string
-                        type: object
-                  rbac:
-                    type: object
-                    properties:
-                      labels:
-                        additionalProperties:
-                          type: string
-                        type: object
-                      annotations:
-                        additionalProperties:
-                          type: string
-                        type: object
-                      admins:
-                        type: object
+                        required:
+                        - projectId
                         properties:
-                          subjects:
-                            type: array
-                            items:
-                              type: object
-                              properties:
-                                apiGroup:
-                                  type: string
-                                kind:
-                                  type: string
-                                name:
-                                  type: string
-                                namespace:
-                                  type: string
-                      viewers:
-                        type: object
-                        properties:
-                          subjects:
-                            type: array
-                            items:
-                              type: object
-                              properties:
-                                apiGroup:
-                                  type: string
-                                kind:
-                                  type: string
-                                name:
-                                  type: string
-                                namespace:
-                                  type: string
-                  serviceAccounts:
-                    type: object
-                    properties:
-                      labels:
-                        additionalProperties:
-                          type: string
-                        type: object
-                      annotations:
-                        additionalProperties:
-                          type: string
-                        type: object
-                      imagePullSecrets:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            name:
+                          projectId:
+                            type: string
+                          billingAccount:
+                            type: string
+                          folderId:
+                            type: string
+                          labels:
+                            type: object
+                            additionalProperties:
                               type: string
-                required:
-                - providerConfigRef
-            required:
-            - parameters
-                  
+                          orgId:
+                            type: string
           status:
             type: object
             properties:

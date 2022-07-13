@@ -12,8 +12,8 @@ spec:
   patchSets:
   - name: common
     patches:
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.labels
+    # - type: FromCompositeFieldPath
+    #   fromFieldPath: metadata.labels
     - type: FromCompositeFieldPath
       fromFieldPath: spec.claimRef.namespace
       toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/tenant]
@@ -595,3 +595,44 @@ spec:
       toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/tenant]
     readinessChecks:
     - type: None
+# ArgoCD
+  - name: argocd
+    base:
+      apiVersion: helm.crossplane.io/v1beta1
+      kind: Release
+      metadata:
+        annotations: 
+          crossplane.io/external-name: argocd
+      spec:
+        forProvider:
+          chart:
+            name:  argo-cd
+            repository: https://argoproj.github.io/argo-helm
+            version: 4.9.12
+          namespace: argocd
+          wait: true
+          waitTimeout: 1h
+          # values:
+        rollbackLimit: 5
+    patches:
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-argocd"
+      toFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-cluster"
+      toFieldPath: spec.providerConfigRef.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.namespace
+      toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/tenant]

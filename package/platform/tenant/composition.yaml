@@ -1,241 +1,52 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: projectx-platform-tenant
+  name: projectx-platform-tenant-gcp
   labels:
-    crossplane.io/xrd: xtenants.platform.projectx.mavenwave.dev
+    crossplane.io/xrd: tenants.platform.projectx.mavenwave.dev
+    provider: gcp
 spec:
   compositeTypeRef:
     apiVersion: platform.projectx.mavenwave.dev/v1alpha1
-    kind: XTenant
+    kind: Tenant
   writeConnectionSecretsToNamespace: crossplane-system
   patchSets:
   - name: common
     patches:
     - type: FromCompositeFieldPath
-      fromFieldPath: metadata.labels
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.claimRef.namespace
-      toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/tenant]
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/team]
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.providerConfigRef.name
       toFieldPath: spec.providerConfigRef.name
   resources:
-# K8s Namespace
-  - name: namespace
+# GCP Project
+  - name: project
     base:
-      apiVersion: kubernetes.crossplane.io/v1alpha1
-      kind: Object
+      apiVersion: cloudplatform.gcp.jet.crossplane.io/v1alpha2
+      kind: Project
       spec:
         forProvider:
-          manifest:
-            apiVersion: v1
-            kind: Namespace
+          autoCreateNetwork: false
+          skipDelete: true
     patches:
     - type: PatchSet
       patchSetName: common
     - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-namespace"
+      fromFieldPath: spec.parameters.google.project.billingAccount
+      toFieldPath: spec.forProvider.billingAccount
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.project.folderId
+      toFieldPath: spec.forProvider.folderId
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.project.labels
+      toFieldPath: spec.forProvider.labels
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.manifest.metadata.name
+      toFieldPath: spec.forProvider.name
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.namespace.labels
-      toFieldPath: spec.forProvider.manifest.metadata.labels
+      fromFieldPath: spec.parameters.google.project.orgId
+      toFieldPath: spec.forProvider.orgId
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.namespace.annotations
-      toFieldPath: spec.forProvider.manifest.metadata.annotations
-# K8s Admin Role
-  - name: k8s-admin-role
-    base:
-      apiVersion: kubernetes.crossplane.io/v1alpha1
-      kind: Object
-      spec:
-        forProvider:
-          manifest:
-            apiVersion: rbac.authorization.k8s.io/v1
-            kind: Role
-            metadata:
-              name: admin
-            rules:
-            - apiGroups:
-              - "*"
-              resources:
-              - "*"
-              verbs:
-              - "*"
-    patches:
-    - type: PatchSet
-      patchSetName: common
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-admin-role"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.manifest.metadata.namespace
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.rbac.labels
-      toFieldPath: spec.forProvider.manifest.metadata.labels
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.rbac.annotations
-      toFieldPath: spec.forProvider.manifest.metadata.annotations
-# K8s Viewer Role
-  - name: k8s-viewer-role
-    base:
-      apiVersion: kubernetes.crossplane.io/v1alpha1
-      kind: Object
-      spec:
-        forProvider:
-          manifest:
-            apiVersion: rbac.authorization.k8s.io/v1
-            kind: Role
-            metadata:
-              name: viewer
-            rules:
-            - apiGroups:
-              - "*"
-              resources:
-              - "*"
-              verbs:
-              - get
-              - watch
-              - list
-    patches:
-    - type: PatchSet
-      patchSetName: common
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-viewer-role"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.manifest.metadata.namespace
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.rbac.labels
-      toFieldPath: spec.forProvider.manifest.metadata.labels
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.rbac.annotations
-      toFieldPath: spec.forProvider.manifest.metadata.annotations
-# K8s Admin Role Bindings
-  - name: k8s-admin-role-bindings
-    base:
-      apiVersion: kubernetes.crossplane.io/v1alpha1
-      kind: Object
-      spec:
-        forProvider:
-          manifest:
-            apiVersion: rbac.authorization.k8s.io/v1
-            kind: RoleBinding
-            metadata:
-              name: admin-rb
-            roleRef:
-              apiGroup: rbac.authorization.k8s.io
-              kind: Role
-              name: admin
-    patches:
-    - type: PatchSet
-      patchSetName: common
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-admin-rolebinding"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.manifest.metadata.namespace
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.rbac.labels
-      toFieldPath: spec.forProvider.manifest.metadata.labels
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.rbac.annotations
-      toFieldPath: spec.forProvider.manifest.metadata.annotations
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.rbac.admins.subjects
-      toFieldPath: spec.forProvider.manifest.subjects
-# K8s Viewer Role Bindings
-  - name: k8s-viewer-role-bindings
-    base:
-      apiVersion: kubernetes.crossplane.io/v1alpha1
-      kind: Object
-      spec:
-        forProvider:
-          manifest:
-            apiVersion: rbac.authorization.k8s.io/v1
-            kind: RoleBinding
-            metadata:
-              name: viewer-rb
-            roleRef:
-              apiGroup: rbac.authorization.k8s.io
-              kind: Role
-              name: viewer
-    patches:
-    - type: PatchSet
-      patchSetName: common
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-viewer-rolebinding"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.manifest.metadata.namespace
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.rbac.labels
-      toFieldPath: spec.forProvider.manifest.metadata.labels
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.rbac.annotations
-      toFieldPath: spec.forProvider.manifest.metadata.annotations
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.rbac.viewers.subjects
-      toFieldPath: spec.forProvider.manifest.subjects
-# K8s Service Account
-  - name: k8s-service-account
-    base:
-      apiVersion: kubernetes.crossplane.io/v1alpha1
-      kind: Object
-      spec:
-        forProvider:
-          manifest:
-            apiVersion: v1
-            kind: ServiceAccount
-    patches:
-    - type: PatchSet
-      patchSetName: common
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-service-account"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.manifest.metadata.name
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.manifest.metadata.namespace
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.serviceAccount.labels
-      toFieldPath: spec.forProvider.manifest.metadata.labels
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.serviceAccount.annotations
-      toFieldPath: spec.forProvider.manifest.metadata.annotations
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.serviceAccount.imagePullSecrets
-      toFieldPath: spec.forProvider.manifest.imagePullSecrets
+      fromFieldPath: spec.parameters.google.project.projectId
+      toFieldPath: spec.forProvider.projectId
