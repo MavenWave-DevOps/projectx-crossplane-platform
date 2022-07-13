@@ -1,0 +1,78 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xingressnginxes.services.projectx.mavenwave.dev
+spec:
+  group: services.projectx.mavenwave.dev
+  names:
+    kind: XIngressNginx
+    plural: xingressnginxes
+  defaultCompositionRef:
+    name: projectx-services-ingress-nginx
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  providerConfigRef:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                    required:
+                    - name
+                  valuesFrom:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        configMapKeyRef:
+                          type: object
+                          properties:
+                            key:
+                              type: string
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                            optional:
+                              type: boolean
+                              default: false
+                          required:
+                          - name
+                          - namespace
+                        secretKeyRef:
+                          type: object
+                          properties:
+                            key:
+                              type: string
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                            optional:
+                              type: boolean
+                              default: false
+                          required:
+                          - name
+                          - namespace
+                  values:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                required:
+                - providerConfigRef
+            required:
+            - parameters
+                  
+          status:
+            type: object
+            properties:

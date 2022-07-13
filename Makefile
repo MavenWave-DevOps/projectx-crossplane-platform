@@ -1,5 +1,5 @@
 current_dir = $(shell pwd)
-platform_packages = $(shell ls -d 1 ${current_dir}/package/platform/**)
+platform_packages = $(shell ls -d ${current_dir}/package/platform/**)
 export KUBECONFIG = ${current_dir}/kubeconfig
 creds = $${HOME}/.config/gcloud/application_default_credentials.json
 
@@ -29,7 +29,7 @@ help: ## Show this help message.
 
 ## Create a Kind cluster
 create-cluster:
-	kind create cluster --name platform-crossplane --kubeconfig=${current_dir}/kubeconfig || true
+	kind create cluster --name platform-crossplane --config=${current_dir}/dev/kind/config.yaml --kubeconfig=${current_dir}/kubeconfig || true
 
 ## Delete Kind cluster
 delete-cluster:
@@ -37,7 +37,11 @@ delete-cluster:
 
 ## Install crossplane onto Kind cluster
 install-crossplane:
-	helm upgrade --install --repo https://charts.crossplane.io/stable --create-namespace --namespace crossplane-system crossplane crossplane --values ${current_dir}/dev/helm/values.yaml --wait
+	helm upgrade --install --repo https://charts.crossplane.io/stable --version v1.9.0 --create-namespace --namespace crossplane-system crossplane crossplane --values ${current_dir}/dev/crossplane/values.yaml --wait
+
+## Install ingress-nginx onto Kind cluster
+install-ingress-nginx:
+	kustomize build dev/ingress-nginx | kubectl apply -f -
 
 ## Install platform CRDs in cluster
 install-platform:
@@ -45,23 +49,37 @@ install-platform:
 
 ## Delete Crossplane GCP provider secret
 delete-provider-secret:
-	kubectl -n default delete secret gcp-default || true
+	kubectl -n crossplane-system delete secret gcp-default || true
 
 ## Create Crossplane GCP provider secret
 create-provider-secret: delete-provider-secret
 	kubectl -n crossplane-system create secret generic gcp-default --from-file=credentials=${creds}
 
+## Create GCP providerconfig
 create-gcp-providerconfig:
-	yq e '.spec.projectID |= "${PROJECTID}"' ${current_dir}/dev/providers/gcp-provider.yaml | kubectl apply -f - ;\
+	yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${CPNAME}")' ${current_dir}/dev/providers/gcp-provider.yaml | kubectl apply -f - ;\
 
+## Create GCP Terrajet providerconfig
 create-terrajet-gcp-providerconfig:
-	yq e '.spec.projectID |= "${PROJECTID}"' ${current_dir}/dev/providers/terrajet-gcp-provider.yaml  | kubectl apply -f -
+	yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${CPNAME}")' ${current_dir}/dev/providers/terrajet-gcp-provider.yaml  | kubectl apply -f -
 
-create-providerconfigs: create-provider-secret create-gcp-providerconfig create-terrajet-gcp-providerconfig
+## Create Helm providerconfig
+create-helm-providerconfig:
+	yq e '.metadata.name |= "${CPNAME}"' ${current_dir}/dev/providers/helm-provider.yaml | kubectl apply -f -
 
-create: create-cluster install-crossplane install-platform
+## Create Helm Provider
+create-helm-provider:
+	kubectl apply -f ${current_dir}/dev/helm-provider/
 
+## Create providerconfigs
+create-providerconfigs: create-provider-secret create-gcp-providerconfig create-helm-providerconfig
+
+# Create local devlopment cluster
+create: create-cluster install-ingress-nginx install-crossplane create-helm-provider install-platform
+
+# Setup local devlopment cluster
 setup: create-providerconfigs
 
 # TODO cleanup resources
+# Destroy local devlopment cluster
 destroy: delete-cluster

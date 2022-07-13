@@ -22,22 +22,22 @@ spec:
         source: Secret
   writeConnectionSecretToRef:
     name: devops-controller-cluster
----
-apiVersion: services.projectx.mavenwave.dev/v1alpha1
-kind: Crossplane
-metadata:
-  name: devops-controller
-spec: 
-  parameters:
-    providerConfigRef:
-      name:
----
-apiVersion: gcp.projectx.mavenwave.dev/v1alpha1
-kind: Crossplane
-metadata:
-  name: devops-controller
-spec: 
-  parameters:
-    providerConfigRef:
-      name:
-    projectId:
+# ---
+# apiVersion: services.projectx.mavenwave.dev/v1alpha1
+# kind: Crossplane
+# metadata:
+#   name: devops-controller
+# spec: 
+#   parameters:
+#     providerConfigRef:
+#       name:
+# ---
+# apiVersion: gcp.projectx.mavenwave.dev/v1alpha1
+# kind: Crossplane
+# metadata:
+#   name: devops-controller
+# spec: 
+#   parameters:
+#     providerConfigRef:
+#       name:
+#     projectId:

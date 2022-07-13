@@ -1,0 +1,216 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: controlplanes.platform.projectx.mavenwave.dev
+spec:
+  group: platform.projectx.mavenwave.dev
+  names:
+    kind: ControlPlane
+    plural: controlplanes
+  connectionSecretKeys:
+  - kubeconfig
+  defaultCompositionRef:
+    name: projectx-platform-controlplane-vcluster-gcp
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            required:
+            - parameters
+            properties:
+              parameters:
+                type: object
+                required: []
+                properties:
+                  platform:
+                    type: object
+                    properties:
+                      version:
+                        type: string
+                        default: main
+                  vcluster:
+                    type: object
+                    required:
+                    - domain
+                    properties:
+                      domain:
+                        type: string
+                      port:
+                        type: integer
+                        default: 443
+                  google:
+                    type: object
+                    required:
+                    - project
+                    - network
+                    properties:
+                      project:
+                        type: object
+                        required:
+                        - number
+                        - id
+                        properties:
+                          number:
+                            type: string
+                          id:
+                            type: string
+                      region:
+                        type: string
+                        enum:
+                        - regional-us-central
+                        - us-central
+                        - us-east
+                        - us-west
+                        default: regional-us-central
+                        description: Resources region
+                      network:
+                        type: object
+                        required:
+                        - nodes
+                        - pods
+                        - services
+                        properties:
+                          nodes:
+                            type: object
+                            required:
+                            - cidr
+                            properties:
+                              cidr:
+                                type: string
+                                description: Nodes subnet CIDR
+                          pods:
+                            type: object
+                            required:
+                            - cidr
+                            properties:
+                              cidr:
+                                type: string
+                                description: Pods subnet CIDR
+                          services:
+                            type: object
+                            required:
+                            - cidr
+                            properties:
+                              cidr:
+                                type: string
+                                description: Services subnet CIDR
+                      cluster:
+                        type: object
+                        required:
+                        - authorizedNetworks
+                        - identity
+                        properties:
+                          authorizedNetworks:
+                            type: object
+                            description: The configuration options for master authorized networks feature
+                            properties:
+                              enabled:
+                                type: boolean
+                                description: Whether or not master authorized networks is enabled
+                                default: false
+                              cidrBlocks:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    displayName:
+                                      type: string
+                                      description: An optional field for users to identify CIDR blocks
+                                    cidrBlock:
+                                      type: string
+                                      description: Must be specified in CIDR notation
+                          diskSizeGb:
+                            type: integer
+                            description: Node disk size in GB
+                            default: 50
+                          identity:
+                            type: object
+                            required:
+                            - secretRef
+                            properties:
+                              source:
+                                type: string
+                                default: Secret
+                              secretRef:
+                                type: object
+                                required: []
+                                properties:
+                                  namespace:
+                                    type: string
+                                    default: crossplane-system
+                                  name:
+                                    type: string
+                                    default: default
+                                  key: 
+                                    type: string
+                                    default: credentials
+                          masterIpv4CidrBlock:
+                            type: string
+                            description: The IP range in CIDR notation to use for the hosted master network
+                            default: 172.16.0.0/28
+                          machineType:
+                            type: string
+                            enum:
+                            - small
+                            - medium
+                            description: Node pool machine type
+                            default: small
+                          min:
+                            type: integer
+                            description: Minimum number of cluster nodes
+                            default: 1
+                          max:
+                            type: integer
+                            description: Maximum number of cluster nodes
+                            default: 10
+          status:
+            type: object
+            properties:
+              google:
+                type: object
+                properties:
+                  network:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      selfLink:
+                        type: string
+                  kms:
+                    type: object
+                    properties:
+                      keyRing:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                      cryptoKey:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                  cluster:
+                    type: object
+                    properties:
+                      endpoint:
+                        type: string
+                      selfLink:
+                        type: string
+                      location:
+                        type: string
+                      pods:
+                        type: object
+                        properties:
+                          cidr:
+                            type: string
+                      services:
+                        type: object
+                        properties:
+                          cidr:
+                            type: string

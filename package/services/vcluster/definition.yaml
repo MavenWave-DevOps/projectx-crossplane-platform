@@ -1,14 +1,17 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
-  name: xcrossplane.services.projectx.mavenwave.dev
+  name: xvcluster.services.projectx.mavenwave.dev
 spec:
   group: services.projectx.mavenwave.dev
   names:
-    kind: XCrossplane
-    plural: xcrossplane
+    kind: XVcluster
+    plural: xvcluster
+  claimNames:
+    kind: Vcluster
+    plural: vcluster
   defaultCompositionRef:
-    name: projectx-services-crossplane
+    name: projectx-services-vcluster
   versions:
   - name: v1alpha1
     served: true
@@ -30,8 +33,17 @@ spec:
                         type: string
                     required:
                     - name
+                  domain:
+                    type: string
+                  port:
+                    type: integer
+                    default: 443
+                  values:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
                 required:
                 - providerConfigRef
+                - domain
             required:
             - parameters
                   

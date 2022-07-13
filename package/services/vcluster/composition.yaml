@@ -1,0 +1,87 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: projectx-services-vcluster
+  labels:
+    crossplane.io/xrd: xvcluster.services.projectx.mavenwave.dev
+spec:
+  compositeTypeRef:
+    apiVersion: services.projectx.mavenwave.dev/v1alpha1
+    kind: XVcluster
+  writeConnectionSecretsToNamespace: crossplane-system
+  patchSets:
+  - name: common
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.labels
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.namespace
+      toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/tenant]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.providerConfigRef.name
+      toFieldPath: spec.providerConfigRef.name
+  resources:
+  # Helm Chart
+  - name: vcluster
+    base:
+      apiVersion: helm.crossplane.io/v1beta1
+      kind: Release
+      spec:
+        forProvider:
+          chart:
+            name: vcluster
+            repository: https://charts.loft.sh
+            version: 0.11.0-alpha.0
+          wait: true
+          set:
+          - name: ingress.enabled
+            value: "true"
+          - name: ingress.host
+          - name: syncer.extraArgs[0]
+        rollbackLimit: 5
+    patches:
+    - type: PatchSet
+      patchSetName: common
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-vcluster"
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-vcluster"
+      toFieldPath: metadata.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.namespace
+      toFieldPath: spec.forProvider.namespace
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.parameters.domain
+        strategy: string
+        string:
+          fmt: "%s.%s"
+      toFieldPath: spec.forProvider.set[1].value
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.parameters.domain
+        - fromFieldPath: spec.parameters.port
+        strategy: string
+        string:
+          fmt: "--out-kube-config-server=https://%s.%s:%d"
+      toFieldPath: spec.forProvider.set[2].value
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.values
+      toFieldPath: spec.forProvider.values

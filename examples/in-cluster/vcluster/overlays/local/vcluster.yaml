@@ -1,0 +1,8 @@
+---
+apiVersion: services.projectx.mavenwave.dev/v1alpha1
+kind: Vcluster
+metadata:
+  name: benchmark
+spec: 
+  parameters:
+    domain: 192.168.1.142.sslip.io
