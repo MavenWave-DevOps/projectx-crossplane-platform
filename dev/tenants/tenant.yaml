@@ -1,0 +1,16 @@
+apiVersion: platform.projectx.mavenwave.dev/v1alpha1
+kind: Tenant
+metadata:
+  name: test-tenant
+spec:
+  compositionSelector:
+    matchLabels:
+      provider: gcp
+  parameters:
+    providerConfigRef:
+      name: default
+    google:
+      project:
+        projectId:
+        billingAccount:
+        folderId:
