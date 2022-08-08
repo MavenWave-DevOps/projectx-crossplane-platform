@@ -22,8 +22,20 @@ spec:
             properties:
               parameters:
                 type: object
-                required: []
+                required:
+                - domain
                 properties:
+                  providerConfigRef:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        default: default
+                  domain:
+                    type: string
+                  port:
+                    type: integer
+                    default: 443
           status:
             type: object
             properties:

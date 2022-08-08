@@ -22,7 +22,7 @@ spec:
             properties:
               parameters:
                 type: object
-                required:
+                required: 
                 - providerConfigRef
                 properties:
                   providerConfigRef:
