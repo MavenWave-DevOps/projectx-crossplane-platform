@@ -1,16 +1,22 @@
 # Projectx Crossplane Platform
 
 ## Requirements
-* [Crossplane Plugin](https://crossplane.io/docs/v1.8/getting-started/install-configure.html#install-crossplane-cli)
-* Kubernetes cluster (Cloud or local)
+* [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
+* [Helm](https://helm.sh/docs/intro/quickstart/)
+* yq
 
-## Setup
-```
-kubectl create namespace crossplane-system
-helm repo add crossplane-stable https://charts.crossplane.io/stable
-helm repo update
-helm install crossplane --namespace crossplane-system crossplane-stable/crossplane -f hacking/values.yaml
-```
+## Development Setup
+Perform the following to create a local Kind cluster and deploy crossplane and the custom compositions to the local cluster.
+* ```sh
+  make create
+  ```
+* Wait until providers are healthy (`kubectl get providers`)
+* ```sh
+  make setup
+  ```
+* Set your KUBECONFIG environment variable (`export KUBECONFIG=$PWD/kubeconfig`)
+* When finished use `make destroy` to delete the kind cluster. NOTE: This will not remove cloud resources created by Crossplane
+
 ## Deploy Configuration
 Apply the following manifest to use the Platform API in your cluster.
 ```yaml
@@ -23,7 +29,3 @@ spec:
   packagePullPolicy: Always
 
 ```
-
-## Development
-* Create a development Kubernetes cluster (cloud, K3D, Minikube)
-* Install Crossplane using instructions above
