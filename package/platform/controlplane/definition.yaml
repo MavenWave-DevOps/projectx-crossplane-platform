@@ -7,6 +7,8 @@ spec:
   names:
     kind: ControlPlane
     plural: controlplanes
+  defaultCompositionRef:
+    name: projectx-platform-controlplane-vcluster-gcp
   versions:
   - name: v1alpha1
     served: true
@@ -25,17 +27,17 @@ spec:
                 required:
                 - domain
                 properties:
-                  providerConfigRef:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                        default: default
                   domain:
                     type: string
                   port:
                     type: integer
                     default: 443
+                  platform:
+                    type: object
+                    properties:
+                      versions:
+                        type: string
+                        default: main
           status:
             type: object
             properties:

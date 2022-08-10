@@ -2,11 +2,12 @@
 apiVersion: platform.projectx.mavenwave.dev/v1alpha1
 kind: ControlPlane
 metadata:
-  name: virtual
+  name: a-team
 spec:
   compositionSelector:
     matchLabels:
-      provider: vcluster
+      provider: gcp
+      virtual: "true"
   parameters:
     domain: cp.192.168.1.142.sslip.io
     port: 4430

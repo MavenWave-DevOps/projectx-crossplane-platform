@@ -1,0 +1,202 @@
+# apiVersion: apiextensions.crossplane.io/v1
+# kind: Composition
+# metadata:
+#   name: projectx-platform-controlplane-gcp
+#   labels:
+#     crossplane.io/xrd: controlplanes.platform.projectx.mavenwave.dev
+#     provider: gcp
+# spec:
+#   compositeTypeRef:
+#     apiVersion: platform.projectx.mavenwave.dev/v1alpha1
+#     kind: ControlPlane
+#   writeConnectionSecretsToNamespace: crossplane-system
+#   patchSets:
+#   - name: common
+#     patches:
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/controlplane]
+#   resources:
+# # Vcluster
+#   - name: vcluster
+#     base:
+#       apiVersion: helm.crossplane.io/v1beta1
+#       kind: Release
+#       spec:
+#         forProvider:
+#           chart:
+#             name: vcluster
+#             repository: https://charts.loft.sh
+#             version: 0.11.0-alpha.0
+#           wait: true
+#           set:
+#           - name: ingress.enabled
+#             value: "true"
+#           - name: ingress.host
+#           - name: syncer.extraArgs[0]
+#           - name: syncer.extraArgs[1]
+#         rollbackLimit: 5
+#     patches:
+#     - type: PatchSet
+#       patchSetName: common
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: spec.parameters.providerConfigRef.name
+#       toFieldPath: spec.providerConfigRef.name
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: metadata.annotations[crossplane.io/external-name]
+#       transforms:
+#       - type: string
+#         string:
+#           fmt: "%s-vcluster"
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: metadata.name
+#       transforms:
+#       - type: string
+#         string:
+#           fmt: "%s-vcluster"
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: spec.forProvider.namespace
+#     - type: CombineFromComposite
+#       combine:
+#         variables:
+#         - fromFieldPath: metadata.name
+#         - fromFieldPath: spec.parameters.domain
+#         strategy: string
+#         string:
+#           fmt: "%s.%s"
+#       toFieldPath: spec.forProvider.set[1].value
+#     - type: CombineFromComposite
+#       combine:
+#         variables:
+#         - fromFieldPath: metadata.name
+#         - fromFieldPath: spec.parameters.domain
+#         - fromFieldPath: spec.parameters.port
+#         strategy: string
+#         string:
+#           fmt: "--out-kube-config-server=https://%s.%s:%d"
+#       toFieldPath: spec.forProvider.set[2].value
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: spec.forProvider.set[3].value
+#       transforms:
+#       - type: string
+#         string: 
+#           fmt: "--out-kube-config-secret=%s-kubeconfig"
+# # Kubernetes Providerconfig
+#   - name: kubernetes-config
+#     base:
+#       apiVersion: kubernetes.crossplane.io/v1alpha1
+#       kind: ProviderConfig
+#       spec:
+#         credentials:
+#           source: Secret
+#           secretRef:
+#             key: config
+#     patches:
+#     - type: PatchSet
+#       patchSetName: common
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: metadata.name
+#       transforms:
+#       - type: string
+#         string:
+#           fmt: "%s-vcluster"
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: spec.credentials.secretRef.namespace
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: spec.credentials.secretRef.name
+#       transforms:
+#       - type: string
+#         string:
+#           fmt: "%s-kubeconfig"
+#     readinessChecks:
+#       - type: None
+# # Helm Providerconfig
+#   - name: helm-config
+#     base:
+#       apiVersion: helm.crossplane.io/v1beta1
+#       kind: ProviderConfig
+#       spec:
+#         credentials:
+#           source: Secret
+#           secretRef:
+#             key: config
+#     patches:
+#     - type: PatchSet
+#       patchSetName: common
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: metadata.name
+#       transforms:
+#       - type: string
+#         string:
+#           fmt: "%s-vcluster"
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: spec.credentials.secretRef.namespace
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: spec.credentials.secretRef.name
+#       transforms:
+#       - type: string
+#         string:
+#           fmt: "%s-kubeconfig"
+#     readinessChecks:
+#       - type: None
+# # Crossplane
+#   - name: crossplane
+#     base:
+#       apiVersion: helm.crossplane.io/v1beta1
+#       kind: Release
+#       metadata:
+#         annotations: 
+#           crossplane.io/external-name: crossplane
+#       spec:
+#         forProvider:
+#           chart:
+#             name: crossplane
+#             repository: https://charts.crossplane.io/stable/
+#             version: 1.8.1
+#           namespace: crossplane-system
+#           set:
+#           - name: provider.packages[0]
+#             value: crossplane/provider-gcp:v0.21.0
+#           - name: provider.packages[1]
+#             value: crossplane/provider-jet-gcp:v0.2.0-preview
+#           - name: provider.packages[2]
+#             value: crossplane/provider-kubernetes:v0.3.0
+#           - name: provider.packages[3]
+#             value: crossplane/provider-helm:v0.10.0
+#           - name: configuration.packages[0]
+#           wait: true
+#         rollbackLimit: 5
+#     patches:
+#     - type: PatchSet
+#       patchSetName: common
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: metadata.name
+#       transforms:
+#       - type: string
+#         string:
+#           fmt: "%s-crossplane"
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: metadata.name
+#       toFieldPath: spec.providerConfigRef.name
+#       transforms:
+#       - type: string
+#         string:
+#           fmt: "%s-vcluster"
+#     - type: FromCompositeFieldPath
+#       fromFieldPath: spec.parameters.platform.version
+#       toFieldPath: spec.forProvider.set[4].value
+#       transforms:
+#       - type: string
+#         string:
+#           fmt: "us.gcr.io/bradw-nextgen-devops/projectx-platform:%s"
