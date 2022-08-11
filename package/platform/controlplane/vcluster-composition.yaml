@@ -4,8 +4,7 @@ metadata:
   name: projectx-platform-controlplane-vcluster-gcp
   labels:
     crossplane.io/xrd: controlplanes.platform.projectx.mavenwave.dev
-    provider: gcp
-    virtual: "true"
+    provider: virtual-gcp
 spec:
   compositeTypeRef:
     apiVersion: platform.projectx.mavenwave.dev/v1alpha1
@@ -17,6 +16,10 @@ spec:
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/controlplane]
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
   resources:
 # Vcluster
   - name: vcluster
@@ -48,14 +51,14 @@ spec:
       toFieldPath: metadata.annotations[crossplane.io/external-name]
       transforms:
       - type: string
-        string: 
+        string:
           fmt: "%s-vcluster"
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: metadata.name
       transforms:
       - type: string
-        string: 
+        string:
           fmt: "%s-vcluster"
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
@@ -67,7 +70,7 @@ spec:
         - fromFieldPath: spec.parameters.vcluster.domain
         strategy: string
         string:
-          fmt: "%s.%s"
+          fmt: "%s-controlplane.%s"
       toFieldPath: spec.forProvider.set[1].value
     - type: CombineFromComposite
       combine:
@@ -77,14 +80,14 @@ spec:
         - fromFieldPath: spec.parameters.vcluster.port
         strategy: string
         string:
-          fmt: "--out-kube-config-server=https://%s.%s:%d"
+          fmt: "--out-kube-config-server=https://%s-controlplane.%s:%d"
       toFieldPath: spec.forProvider.set[2].value
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: spec.forProvider.set[3].value
       transforms:
       - type: string
-        string: 
+        string:
           fmt: "--out-kube-config-secret=%s-kubeconfig"
 # Kubernetes Providerconfig
   - name: kubernetes-config
@@ -195,7 +198,7 @@ spec:
         string:
           fmt: "%s-vcluster"
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.vcluster.platform.version
+      fromFieldPath: spec.parameters.platform.version
       toFieldPath: spec.forProvider.set[4].value
       transforms:
       - type: string

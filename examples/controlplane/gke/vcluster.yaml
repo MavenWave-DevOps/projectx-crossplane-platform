@@ -2,13 +2,11 @@
 apiVersion: platform.projectx.mavenwave.dev/v1alpha1
 kind: ControlPlane
 metadata:
-  name: cp-virtual
+  name: cp-gke
 spec:
   compositionSelector:
     matchLabels:
-      provider: virtual-gcp
+      provider: gcp
   parameters:
     platform: {}
-    vcluster:
-      domain: 192.168.1.142.sslip.io
-      port: 4430
+    google: {}

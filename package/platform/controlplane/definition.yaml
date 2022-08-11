@@ -26,8 +26,7 @@ spec:
             properties:
               parameters:
                 type: object
-                required:
-                - domain
+                required: []
                 properties:
                   region:
                     type: string
@@ -37,23 +36,32 @@ spec:
                     - us-west
                     default: us-central
                     description: Resources region
+                  platform:
+                    type: object
+                    properties:
+                      version:
+                        type: string
+                        default: main
                   vcluster:
                     type: object
+                    required:
+                    - domain
                     properties:
                       domain:
                         type: string
                       port:
                         type: integer
                         default: 443
-                      platform:
-                        type: object
-                        properties:
-                          versions:
-                            type: string
-                            default: main
                   google:
                     type: object
                     properties:
+                      project:
+                        type: object
+                        properties:
+                          number:
+                            type: string
+                          id:
+                            type: string
                       network:
                         type: object
                         properties:
@@ -69,28 +77,111 @@ spec:
                                 default: []
                                 items:
                                   type: string
+                          pods:
+                            type: object
+                            properties:
+                              cidr:
+                                type: string
+                                description: Pods subnet CIDR
+                          services:
+                            type: object
+                            properties:
+                              cidr:
+                                type: string
+                                description: Services subnet CIDR
                       cluster:
                         type: object
                         properties:
+                          authorizedNetworks:
+                            type: object
+                            description: The configuration options for master authorized networks feature
+                            properties:
+                              enabled:
+                                type: boolean
+                                description: Whether or not master authorized networks is enabled
+                                default: false
+                              cidrBlocks:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    displayName:
+                                      type: string
+                                      description: An optional field for users to identify CIDR blocks
+                                    cidrBlock:
+                                      type: string
+                                      description: Must be specified in CIDR notation
+                          diskSizeGb:
+                            type: integer
+                            description: Node disk size in GB
+                            default: 50
+                          identity:
+                            type: object
+                            properties:
+                              source:
+                                type: string
+                                default: InjectedIdentity
                           masterIpv4CidrBlock:
                             type: string
                             description: The IP range in CIDR notation to use for the hosted master network
                             default: 172.16.0.0/28
+                          machineType:
+                            type: string
+                            enum:
+                            - small
+                            - medium
+                            description: Node pool machine type
+                            default: small
+                          min:
+                            type: integer
+                            description: Minimum number of cluster nodes
+                            default: 1
+                          max:
+                            type: integer
+                            description: Maximum number of cluster nodes
+                            default: 10
           status:
             type: object
             properties:
-              network:
+              google:
                 type: object
                 properties:
-                  id:
-                    type: string
-                  selfLink:
-                    type: string
-              kms:
-                type: object
-                properties:
-                  keyRing:
+                  network:
                     type: object
                     properties:
-                      name:
+                      id:
                         type: string
+                      selfLink:
+                        type: string
+                  kms:
+                    type: object
+                    properties:
+                      keyRing:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                      cryptoKey:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                  cluster:
+                    type: object
+                    properties:
+                      endpoint:
+                        type: string
+                      selfLink:
+                        type: string
+                      location:
+                        type: string
+                      pods:
+                        type: object
+                        properties:
+                          cidr:
+                            type: string
+                      services:
+                        type: object
+                        properties:
+                          cidr:
+                            type: string
