@@ -9,5 +9,6 @@ spec:
       provider: gcp
       virtual: "true"
   parameters:
-    domain: cp.192.168.1.142.sslip.io
-    port: 4430
+    vcluster:
+      domain: cp.192.168.1.142.sslip.io
+      port: 4430

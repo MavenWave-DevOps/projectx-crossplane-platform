@@ -1,90 +1,152 @@
-# apiVersion: apiextensions.crossplane.io/v1
-# kind: Composition
-# metadata:
-#   name: projectx-platform-controlplane-gcp
-#   labels:
-#     crossplane.io/xrd: controlplanes.platform.projectx.mavenwave.dev
-#     provider: gcp
-# spec:
-#   compositeTypeRef:
-#     apiVersion: platform.projectx.mavenwave.dev/v1alpha1
-#     kind: ControlPlane
-#   writeConnectionSecretsToNamespace: crossplane-system
-#   patchSets:
-#   - name: common
-#     patches:
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: metadata.name
-#       toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/controlplane]
-#   resources:
-# # Vcluster
-#   - name: vcluster
-#     base:
-#       apiVersion: helm.crossplane.io/v1beta1
-#       kind: Release
-#       spec:
-#         forProvider:
-#           chart:
-#             name: vcluster
-#             repository: https://charts.loft.sh
-#             version: 0.11.0-alpha.0
-#           wait: true
-#           set:
-#           - name: ingress.enabled
-#             value: "true"
-#           - name: ingress.host
-#           - name: syncer.extraArgs[0]
-#           - name: syncer.extraArgs[1]
-#         rollbackLimit: 5
-#     patches:
-#     - type: PatchSet
-#       patchSetName: common
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: spec.parameters.providerConfigRef.name
-#       toFieldPath: spec.providerConfigRef.name
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: metadata.name
-#       toFieldPath: metadata.annotations[crossplane.io/external-name]
-#       transforms:
-#       - type: string
-#         string:
-#           fmt: "%s-vcluster"
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: metadata.name
-#       toFieldPath: metadata.name
-#       transforms:
-#       - type: string
-#         string:
-#           fmt: "%s-vcluster"
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: metadata.name
-#       toFieldPath: spec.forProvider.namespace
-#     - type: CombineFromComposite
-#       combine:
-#         variables:
-#         - fromFieldPath: metadata.name
-#         - fromFieldPath: spec.parameters.domain
-#         strategy: string
-#         string:
-#           fmt: "%s.%s"
-#       toFieldPath: spec.forProvider.set[1].value
-#     - type: CombineFromComposite
-#       combine:
-#         variables:
-#         - fromFieldPath: metadata.name
-#         - fromFieldPath: spec.parameters.domain
-#         - fromFieldPath: spec.parameters.port
-#         strategy: string
-#         string:
-#           fmt: "--out-kube-config-server=https://%s.%s:%d"
-#       toFieldPath: spec.forProvider.set[2].value
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: metadata.name
-#       toFieldPath: spec.forProvider.set[3].value
-#       transforms:
-#       - type: string
-#         string: 
-#           fmt: "--out-kube-config-secret=%s-kubeconfig"
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: projectx-platform-controlplane-gcp
+  labels:
+    crossplane.io/xrd: controlplanes.platform.projectx.mavenwave.dev
+    provider: gcp
+spec:
+  compositeTypeRef:
+    apiVersion: platform.projectx.mavenwave.dev/v1alpha1
+    kind: ControlPlane
+  writeConnectionSecretsToNamespace: crossplane-system
+  patchSets:
+  - name: common
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/controlplane]
+  resources:
+# Network
+  - name: network
+    base:
+      apiVersion: compute.gcp.crossplane.io/v1beta1
+      kind: Network
+      spec:
+        forProvider:
+          autoCreateSubnetworks: false
+          routingConfig:
+            routingMode: GLOBAL
+    patches:
+    - type: PatchSet
+      patchSetName: common
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.labels[controlplanes.projectx.mavenwave.dev/network-id]
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.id
+      toFieldPath: status.network.id
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.selfLink
+      toFieldPath: status.network.selfLink
+# Firewall rule for GKE node egress
+  - name: inter-node-fwrule
+    base:
+      apiVersion: compute.gcp.crossplane.io/v1alpha1
+      kind: Firewall
+      spec:
+        forProvider:
+          networkSelector:
+            matchControllerRef: true
+          allowed:
+          - IPProtocol: tcp
+          - IPProtocol: udp
+          - IPProtocol: icmp
+          - IPProtocol: sctp
+          - IPProtocol: esp
+          - IPProtocol: ah
+          direction: EGRESS
+    patches:
+    - type: PatchSet
+      patchSetName: common
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string: 
+          fmt: "%s-cp-intra-cluster-egress"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+      transforms:
+      - type: string
+        string: 
+          fmt: "%s-cp-intra-cluster-egress"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.masterIpv4CidrBlock
+      toFieldPath: spec.forProvider.destinationRanges[0]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.network.nodes.cidr
+      toFieldPath: spec.forProvider.destinationRanges[1]
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.network.pods.cidr
+      toFieldPath: spec.forProvider.destinationRanges[2]
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.network.nodes.tags
+      toFieldPath: spec.forProvider.targetTags
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.labels[controlplanes.projectx.mavenwave.dev/network-id]
+# Firewall rule for GKE webhook ingress
+  - name: webhooks-fwrule
+    base:
+      apiVersion: compute.gcp.crossplane.io/v1alpha1
+      kind: Firewall
+      spec:
+        forProvider:
+          networkSelector:
+            matchControllerRef: true
+          allowed:
+          - IPProtocol: tcp
+            ports:
+            - "8443"
+            - "9443"
+            - "15017"
+          direction: INGRESS
+    patches:
+    - type: PatchSet
+      patchSetName: common
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string: 
+          fmt: "%s-cp-webhooks"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+      transforms:
+      - type: string
+        string: 
+          fmt: "%s-cp-webhooks"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.masterIpv4CidrBlock
+      toFieldPath: spec.forProvider.sourceRanges[0]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.network.nodes.tags
+      toFieldPath: spec.forProvider.targetTags
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.labels[controlplanes.projectx.mavenwave.dev/network-id]
 # # Kubernetes Providerconfig
 #   - name: kubernetes-config
 #     base:

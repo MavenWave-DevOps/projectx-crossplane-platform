@@ -7,6 +7,8 @@ spec:
   names:
     kind: ControlPlane
     plural: controlplanes
+  connectionSecretKeys:
+  - kubeconfig
   defaultCompositionRef:
     name: projectx-platform-controlplane-vcluster-gcp
   versions:
@@ -27,17 +29,68 @@ spec:
                 required:
                 - domain
                 properties:
-                  domain:
+                  region:
                     type: string
-                  port:
-                    type: integer
-                    default: 443
-                  platform:
+                    enum:
+                    - us-central
+                    - us-east
+                    - us-west
+                    default: us-central
+                    description: Resources region
+                  vcluster:
                     type: object
                     properties:
-                      versions:
+                      domain:
                         type: string
-                        default: main
+                      port:
+                        type: integer
+                        default: 443
+                      platform:
+                        type: object
+                        properties:
+                          versions:
+                            type: string
+                            default: main
+                  google:
+                    type: object
+                    properties:
+                      network:
+                        type: object
+                        properties:
+                          nodes:
+                            type: object
+                            properties:
+                              cidr:
+                                type: string
+                                description: Nodes subnet CIDR
+                              tags:
+                                type: array
+                                description: Node pool network tags
+                                default: []
+                                items:
+                                  type: string
+                      cluster:
+                        type: object
+                        properties:
+                          masterIpv4CidrBlock:
+                            type: string
+                            description: The IP range in CIDR notation to use for the hosted master network
+                            default: 172.16.0.0/28
           status:
             type: object
             properties:
+              network:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  selfLink:
+                    type: string
+              kms:
+                type: object
+                properties:
+                  keyRing:
+                    type: object
+                    properties:
+                      name:
+                        type: string

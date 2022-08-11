@@ -64,7 +64,7 @@ spec:
       combine:
         variables:
         - fromFieldPath: metadata.name
-        - fromFieldPath: spec.parameters.domain
+        - fromFieldPath: spec.parameters.vcluster.domain
         strategy: string
         string:
           fmt: "%s.%s"
@@ -73,8 +73,8 @@ spec:
       combine:
         variables:
         - fromFieldPath: metadata.name
-        - fromFieldPath: spec.parameters.domain
-        - fromFieldPath: spec.parameters.port
+        - fromFieldPath: spec.parameters.vcluster.domain
+        - fromFieldPath: spec.parameters.vcluster.port
         strategy: string
         string:
           fmt: "--out-kube-config-server=https://%s.%s:%d"
@@ -195,7 +195,7 @@ spec:
         string:
           fmt: "%s-vcluster"
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.platform.version
+      fromFieldPath: spec.parameters.vcluster.platform.version
       toFieldPath: spec.forProvider.set[4].value
       transforms:
       - type: string
