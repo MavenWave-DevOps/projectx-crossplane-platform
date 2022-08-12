@@ -54,9 +54,15 @@ spec:
                         default: 443
                   google:
                     type: object
+                    required:
+                    - project
+                    - network
                     properties:
                       project:
                         type: object
+                        required:
+                        - number
+                        - id
                         properties:
                           number:
                             type: string
@@ -64,33 +70,40 @@ spec:
                             type: string
                       network:
                         type: object
+                        required:
+                        - nodes
+                        - pods
+                        - services
                         properties:
                           nodes:
                             type: object
+                            required:
+                            - cidr
                             properties:
                               cidr:
                                 type: string
                                 description: Nodes subnet CIDR
-                              tags:
-                                type: array
-                                description: Node pool network tags
-                                default: []
-                                items:
-                                  type: string
                           pods:
                             type: object
+                            required:
+                            - cidr
                             properties:
                               cidr:
                                 type: string
                                 description: Pods subnet CIDR
                           services:
                             type: object
+                            required:
+                            - cidr
                             properties:
                               cidr:
                                 type: string
                                 description: Services subnet CIDR
                       cluster:
                         type: object
+                        required:
+                        - authorizedNetworks
+                        - identity
                         properties:
                           authorizedNetworks:
                             type: object
@@ -120,7 +133,20 @@ spec:
                             properties:
                               source:
                                 type: string
-                                default: InjectedIdentity
+                                default: Secret
+                              secretRef:
+                                type: properties
+                                required:
+                                - namespace
+                                - name
+                                - key
+                                properties:
+                                  namespace:
+                                    type: string
+                                  name:
+                                    type: string
+                                  key: 
+                                    type: string
                           masterIpv4CidrBlock:
                             type: string
                             description: The IP range in CIDR notation to use for the hosted master network

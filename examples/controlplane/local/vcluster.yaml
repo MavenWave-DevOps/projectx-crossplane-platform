@@ -2,7 +2,7 @@
 apiVersion: platform.projectx.mavenwave.dev/v1alpha1
 kind: ControlPlane
 metadata:
-  name: cp-virtual
+  name: a-team-virtual
 spec:
   compositionSelector:
     matchLabels:
