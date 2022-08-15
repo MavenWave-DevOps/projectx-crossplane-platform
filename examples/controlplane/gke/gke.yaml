@@ -9,7 +9,7 @@ spec:
       provider: gcp
   parameters:
     platform:
-      version: sha-c4c687c
+      version: main
     google:
       project:
         id: bradw-nextgen-devops

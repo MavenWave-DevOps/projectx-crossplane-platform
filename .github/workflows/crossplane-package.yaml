@@ -1,4 +1,4 @@
-name: ci
+name: Crossplane Package
 
 on:
   push:

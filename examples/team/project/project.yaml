@@ -1,6 +1,0 @@
-apiVersion: platform.projectx.mavenwave.dev/v1alpha1
-kind: Team
-metadata:
-  name: app-team-a
-spec: 
-  parameters:
