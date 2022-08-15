@@ -1,0 +1,58 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: projectx-services-ingress-nginx
+  labels:
+    crossplane.io/xrd: xingressnginxes.services.projectx.mavenwave.dev
+spec:
+  compositeTypeRef:
+    apiVersion: services.projectx.mavenwave.dev/v1alpha1
+    kind: XIngressNginx
+  writeConnectionSecretsToNamespace: crossplane-system
+  patchSets:
+  - name: common
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.labels
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.namespace
+      toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/tenant]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.providerConfigRef.name
+      toFieldPath: spec.providerConfigRef.name
+  resources:
+  # Helm Chart
+  - name: nginx
+    base:
+      apiVersion: helm.crossplane.io/v1beta1
+      kind: Release
+      metadata:
+        annotations:
+          crossplane.io/external-name: ingress-nginx
+      spec:
+        forProvider:
+          chart:
+            name: ingress-nginx
+            repository: https://kubernetes.github.io/ingress-nginx
+            version: 4.2.0
+          namespace: ingress-nginx
+          wait: true
+        rollbackLimit: 5
+    patches:
+    - type: PatchSet
+      patchSetName: common
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-ingress-nginx"
+      toFieldPath: metadata.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.valuesFrom
+      toFieldPath: spec.forProvider.valuesFrom
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.values
+      toFieldPath: spec.forProvider.values

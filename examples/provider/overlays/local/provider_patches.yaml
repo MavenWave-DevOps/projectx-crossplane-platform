@@ -9,4 +9,5 @@ spec:
     secretRef:
       name: bradw
       namespace: bradw
+      key: credentials
   projectID: bradw-nextgen-devops

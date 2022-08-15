@@ -3,6 +3,7 @@
 ## Requirements
 * [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
 * [Helm](https://helm.sh/docs/intro/quickstart/)
+* [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/)
 * yq
 
 ## Development Setup
