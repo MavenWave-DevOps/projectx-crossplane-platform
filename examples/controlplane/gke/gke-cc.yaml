@@ -1,0 +1,29 @@
+---
+apiVersion: platform.projectx.mavenwave.dev/v1alpha1
+kind: ControlPlane
+metadata:
+  name: a-team-gke-cc
+spec:
+  compositionSelector:
+    matchLabels:
+      provider: gcp-config-connector
+  parameters:
+    platform:
+      version: main
+    google:
+      project:
+        id: bradw-nextgen-devops
+        number: "809429613600"
+      network:
+        nodes:
+          cidr: 10.0.0.0/24
+        pods:
+          cidr: 10.1.0.0/16
+        services:
+          cidr: 10.2.0.0/20
+      cluster:
+        authorizedNetworks: {}
+        identity:
+          source: Secret
+          secretRef:
+            name: gcp-default
