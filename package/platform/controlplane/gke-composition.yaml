@@ -11,11 +11,32 @@ spec:
     kind: ControlPlane
   writeConnectionSecretsToNamespace: crossplane-system
   patchSets:
-  - name: common
+  - name: name
     patches:
     - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/controlplane]
+      fromFieldPath:  metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath:  metadata.name
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+  - name: providerConfig
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.namespace
+      toFieldPath: spec.providerConfigRef.name
+  - name: metadata
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.name
+      toFieldPath: metadata.labels[platform.projectx.mavenwave.dev/controlplane]
   resources:
 # Network
   - name: network
@@ -29,37 +50,23 @@ spec:
             routingMode: GLOBAL
     patches:
     - type: PatchSet
-      patchSetName: common
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.annotations[crossplane.io/external-name]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.providerConfigRef.name
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.labels[controlplanes.projectx.mavenwave.dev/network-id]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: name
+    - type: PatchSet
+      patchSetName: providerConfig
+    # - type: FromCompositeFieldPath
+    #   fromFieldPath: spec.claimRef.namespace
+    #   toFieldPath: spec.providerConfigRef.name
     - type: ToCompositeFieldPath
       fromFieldPath: status.atProvider.id
-      toFieldPath: status.network.id
+      toFieldPath: status.google.network.vpc.id
     - type: ToCompositeFieldPath
       fromFieldPath: status.atProvider.selfLink
-      toFieldPath: status.google.network.selfLink
+      toFieldPath: status.google.network.vpc.selfLink
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.google.network.vpc.conditions
 # Firewall rule for GKE node egress
   - name: inter-node-fwrule
     base:
@@ -79,7 +86,9 @@ spec:
           direction: EGRESS
     patches:
     - type: PatchSet
-      patchSetName: common
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: providerConfig
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: metadata.name
@@ -94,9 +103,6 @@ spec:
       - type: string
         string:
           fmt: "%s-cp-intra-cluster-egress"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.cluster.masterIpv4CidrBlock
       toFieldPath: spec.forProvider.destinationRanges[0]
@@ -116,14 +122,10 @@ spec:
       transforms:
         - type: string
           string:
-            fmt: "%s-default-pool"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.labels[controlplanes.projectx.mavenwave.dev/network-id]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
+            fmt: "%s-controlplane-default-pool"
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.google.network.clusterEgressFw.conditions
 # Firewall rule for GKE webhook ingress
   - name: webhooks-fwrule
     base:
@@ -142,24 +144,23 @@ spec:
           direction: INGRESS
     patches:
     - type: PatchSet
-      patchSetName: common
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: providerConfig
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: metadata.name
       transforms:
       - type: string
         string:
-          fmt: "%s-webhooks"
+          fmt: "%s-controlplane-webhooks"
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: metadata.annotations[crossplane.io/external-name]
       transforms:
       - type: string
         string:
-          fmt: "%s-webhooks"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.providerConfigRef.name
+          fmt: "%s-cp-webhooks"
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.cluster.masterIpv4CidrBlock
       toFieldPath: spec.forProvider.sourceRanges[0]
@@ -171,14 +172,10 @@ spec:
       transforms:
         - type: string
           string:
-            fmt: "%s-default-pool"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.labels[controlplanes.projectx.mavenwave.dev/network-id]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
+            fmt: "%s-controlplane-default-pool"
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.google.network.webhooksFw.conditions
 # Nat
   - name: router
     base:
@@ -193,24 +190,11 @@ spec:
             natIpAllocateOption: AUTO_ONLY
     patches:
     - type: PatchSet
-      patchSetName: common
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.annotations[crossplane.io/external-name]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.providerConfigRef.name
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: name
+    - type: PatchSet
+      patchSetName: providerConfig
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.region
       toFieldPath: spec.forProvider.region
@@ -228,13 +212,9 @@ spec:
       - type: string
         string:
           fmt: "%s-controlplane"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.labels[controlplanes.projectx.mavenwave.dev/network-id]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.google.network.router.conditions
 # KMS Keyring
   - name: kms-keyring
     base:
@@ -245,7 +225,9 @@ spec:
           location: 
     patches:
     - type: PatchSet
-      patchSetName: common
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: providerConfig
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: metadata.name
@@ -254,15 +236,12 @@ spec:
         string:
           fmt: "%s-controlplane"
     - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: metadata.annotations[crossplane.io/external-name]
       transforms:
       - type: string
         string:
-          fmt: "%s-crossplane"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.providerConfigRef.name
+          fmt: "%s-controlplane"
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.region
       toFieldPath: spec.forProvider.location
@@ -273,16 +252,12 @@ spec:
           us-central: us-central1
           us-east: us-east1
           us-west: us-west1
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.labels[controlplanes.projectx.mavenwave.dev/kms-id]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-crossplane"
     - type: ToCompositeFieldPath
       fromFieldPath: status.atProvider.name
       toFieldPath: status.google.kms.keyRing.name
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.google.kms.keyRing.conditions
 # KMS Crypto Key      
   - name: kms-crypto-key
     base:
@@ -295,38 +270,29 @@ spec:
             matchControllerRef: true
     patches:
     - type: PatchSet
-      patchSetName: common
-    - type: CombineFromComposite
-      combine:
-        variables:
-        - fromFieldPath: metadata.name
-        - fromFieldPath: spec.parameters.google.region
-        strategy: string
-        string:
-          fmt: "%s-%s-controlplane"
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: providerConfig
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
       toFieldPath: metadata.name
-    - type: CombineFromComposite
-      combine:
-        variables:
-        - fromFieldPath: metadata.name
-        - fromFieldPath: spec.parameters.google.region
-        strategy: string
-        string:
-          fmt: "%s-%s-controlplane"
-      toFieldPath: metadata.annotations[crossplane.io/external-name]
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.providerConfigRef.name
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.labels[controlplanes.projectx.mavenwave.dev/kms-id]
       transforms:
       - type: string
         string:
-          fmt: "%s-crossplane"
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.name
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
     - type: ToCompositeFieldPath
       fromFieldPath: status.atProvider.name
       toFieldPath: status.google.kms.cryptoKey.name
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.google.kms.cryptoKey.conditions
 # KMS Crypto Key Policy
   - name: kms-key-policy
     base:
@@ -342,17 +308,11 @@ spec:
             - role: roles/cloudkms.cryptoKeyEncrypter
     patches:
     - type: PatchSet
-      patchSetName: common
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-crossplane"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.providerConfigRef.name
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: providerConfig
+    - type: PatchSet
+      patchSetName: name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.project.number
       toFieldPath: spec.forProvider.policy.bindings[0].members[0]
@@ -371,6 +331,9 @@ spec:
       - type: string
         string:
           fmt: "serviceAccount:service-%s@container-engine-robot.iam.gserviceaccount.com"
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.google.kms.cryptoKeyPolicy.conditions
 # GKE Cluster
   - name: cluster
     base:
@@ -421,24 +384,11 @@ spec:
             channel: STABLE
     patches:
     - type: PatchSet
-      patchSetName: common
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.annotations[crossplane.io/external-name]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.providerConfigRef.name
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: name
+    - type: PatchSet
+      patchSetName: providerConfig
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: spec.writeConnectionSecretToRef.name
@@ -501,13 +451,6 @@ spec:
       - type: string
         string:
           fmt: "%s.svc.id.goog"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.labels[controlplanes.projectx.mavenwave.dev/cluster-id]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
     - type: ToCompositeFieldPath
       fromFieldPath: status.atProvider.endpoint
       toFieldPath: status.google.cluster.endpoint
@@ -523,6 +466,9 @@ spec:
     - type: ToCompositeFieldPath
       fromFieldPath: status.atProvider.location
       toFieldPath: status.google.cluster.location
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.google.cluster.conditions
     connectionDetails:
     - name: kubeconfig
       fromConnectionSecretKey: kubeconfig
@@ -567,7 +513,9 @@ spec:
             maxUnavailable: 1
     patches:
     - type: PatchSet
-      patchSetName: common
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: providerConfig
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: metadata.name
@@ -575,9 +523,6 @@ spec:
       - type: string
         string:
           fmt: "%s-controlplane"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.providerConfigRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.cluster.min
       toFieldPath: spec.forProvider.autoscaling.minNodeCount
@@ -609,14 +554,13 @@ spec:
       transforms:
         - type: string
           string:
-            fmt: "%s-default-pool"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.labels[controlplanes.projectx.mavenwave.dev/cluster-id]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
+            fmt: "%s-controlplane-default-pool"
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.selfLink
+      toFieldPath: status.google.nodePool.selfLink
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.google.nodePool.conditions
     readinessChecks:
     - type: MatchString
       fieldPath: status.atProvider.status
@@ -640,6 +584,8 @@ spec:
             name: #replace
             key: #replace
     patches:
+    - type: PatchSet
+      patchSetName: metadata
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: metadata.name
@@ -648,7 +594,7 @@ spec:
         string:
           fmt: "%s-controlplane"
     - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+      fromFieldPath: spec.claimRef.name
       toFieldPath: spec.credentials.secretRef.name
       transforms:
       - type: string
@@ -658,7 +604,7 @@ spec:
       fromFieldPath: spec.parameters.google.cluster.identity.source
       toFieldPath: spec.identity.source
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.google.cluster.identity.secretRef.namespace
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.identity.secretRef.namespace
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.cluster.identity.secretRef.name
@@ -666,13 +612,6 @@ spec:
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.cluster.identity.secretRef.key
       toFieldPath: spec.identity.secretRef.key
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.labels[controlplanes.projectx.mavenwave.dev/cluster-id]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
     readinessChecks:
     - type: None
 # Helm Providerconfig
@@ -693,6 +632,8 @@ spec:
             name: #replace
             key: #replace
     patches:
+    - type: PatchSet
+      patchSetName: metadata
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: metadata.name
@@ -711,7 +652,7 @@ spec:
       fromFieldPath: spec.parameters.google.cluster.identity.source
       toFieldPath: spec.identity.source
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.google.cluster.identity.secretRef.namespace
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.identity.secretRef.namespace
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.cluster.identity.secretRef.name
@@ -719,13 +660,6 @@ spec:
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.cluster.identity.secretRef.key
       toFieldPath: spec.identity.secretRef.key
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/tenant]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
     readinessChecks:
     - type: None
 # Crossplane
@@ -757,7 +691,7 @@ spec:
         rollbackLimit: 5
     patches:
     - type: PatchSet
-      patchSetName: common
+      patchSetName: metadata
     - type: FromCompositeFieldPath
       fromFieldPath: metadata.name
       toFieldPath: metadata.name
@@ -779,3 +713,6 @@ spec:
       - type: string
         string:
           fmt: "ghcr.io/mavenwave-devops/projectx-crossplane-platform:%s"
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.crossplane.conditions

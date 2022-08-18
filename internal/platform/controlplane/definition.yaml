@@ -7,6 +7,9 @@ spec:
   names:
     kind: ControlPlane
     plural: controlplanes
+  claimNames:
+    kind: ControlPlaneClaim
+    plural: controlplaneclaims
   connectionSecretKeys:
   - kubeconfig
   defaultCompositionRef:
@@ -49,6 +52,7 @@ spec:
                     required:
                     - project
                     - network
+                    - crossplane
                     properties:
                       project:
                         type: object
@@ -102,9 +106,7 @@ spec:
                                 description: Services subnet CIDR
                       cluster:
                         type: object
-                        required:
-                        - authorizedNetworks
-                        - identity
+                        required: []
                         properties:
                           authorizedNetworks:
                             type: object
@@ -131,19 +133,15 @@ spec:
                             default: 50
                           identity:
                             type: object
-                            required:
-                            - secretRef
+                            required: []
                             properties:
                               source:
                                 type: string
-                                default: Secret
+                                default: InjectedIdentity
                               secretRef:
                                 type: object
                                 required: []
                                 properties:
-                                  namespace:
-                                    type: string
-                                    default: crossplane-system
                                   name:
                                     type: string
                                     default: default
@@ -169,6 +167,18 @@ spec:
                             type: integer
                             description: Maximum number of cluster nodes
                             default: 10
+                      crossplane:
+                        type: object
+                        required:
+                        - serviceAccount
+                        properties:
+                          serviceAccount:
+                            type: object
+                            required:
+                            - email
+                            properties:
+                              email:
+                                type: string
           status:
             type: object
             properties:
@@ -178,10 +188,42 @@ spec:
                   network:
                     type: object
                     properties:
-                      id:
-                        type: string
-                      selfLink:
-                        type: string
+                      vpc:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          selfLink:
+                            type: string
+                          conditions:
+                            type: array
+                            items:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
+                      clusterEgressFw:
+                        type: object
+                        properties:
+                          conditions:
+                            type: array
+                            items:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
+                      webhooksFw:
+                        type: object
+                        properties:
+                          conditions:
+                            type: array
+                            items:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
+                      router:
+                        type: object
+                        properties:
+                          conditions:
+                            type: array
+                            items:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                   kms:
                     type: object
                     properties:
@@ -190,14 +232,37 @@ spec:
                         properties:
                           name:
                             type: string
+                          conditions:
+                            type: array
+                            items:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                       cryptoKey:
                         type: object
                         properties:
                           name:
                             type: string
+                          conditions:
+                            type: array
+                            items:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
+                      cryptoKeyPolicy:
+                        type: object
+                        properties:
+                          conditions:
+                            type: array
+                            items:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                   cluster:
                     type: object
                     properties:
+                      conditions:
+                        type: array
+                        items:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
                       endpoint:
                         type: string
                       selfLink:
@@ -213,4 +278,35 @@ spec:
                         type: object
                         properties:
                           cidr:
+                            type: string
+                  nodePool:
+                    type: object
+                    properties:
+                      conditions:
+                        type: array
+                        items:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                      selfLink:
+                        type: string
+              crossplane:
+                type: object
+                properties:
+                  conditions:
+                    type: array
+                    items:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                  google:
+                    type: object
+                    properties:
+                      serviceAccount:
+                        type: object
+                        properties:
+                          conditions:
+                            type: array
+                            items:
+                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
+                          email:
                             type: string

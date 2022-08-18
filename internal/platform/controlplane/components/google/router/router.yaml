@@ -1,0 +1,41 @@
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: router
+    base:
+      apiVersion: compute.gcp.crossplane.io/v1alpha1
+      kind: Router
+      spec:
+        forProvider:
+          networkSelector:
+            matchControllerRef: true
+          nats:
+          - sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
+            natIpAllocateOption: AUTO_ONLY
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: name
+    - type: PatchSet
+      patchSetName: providerConfig
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.region
+      toFieldPath: spec.forProvider.region
+      transforms:
+      - type: map
+        map:
+          regional-us-central: us-central1
+          us-central: us-central1
+          us-east: us-east1
+          us-west: us-west1
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.nats[0].name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.google.network.router.conditions
