@@ -47,21 +47,25 @@ install-ingress-nginx:
 install-platform:
 	for i in ${platform_packages}; do kubectl apply -f $$i; done
 
+## Create tenant namespace
+create-tenant-ns:
+	kubectl create ns ${TENANT} || true
+
 ## Delete Crossplane GCP provider secret
 delete-provider-secret:
 	kubectl -n crossplane-system delete secret gcp-default || true
 
 ## Create Crossplane GCP provider secret
-create-provider-secret: delete-provider-secret
-	kubectl -n crossplane-system create secret generic gcp-default --from-file=credentials=${creds}
+create-provider-secret: create-tenant-ns delete-provider-secret
+	kubectl -n ${TENANT} create secret generic gcp-default --from-file=credentials=${creds}
 
 ## Create GCP providerconfig
 create-gcp-providerconfig:
-	yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${TENANT}")' ${current_dir}/dev/providers/gcp-provider.yaml | kubectl apply -f - ;\
+	yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${TENANT}") | (.spec.credentials.secretRef.namespace |= "${TENANT}")' ${current_dir}/dev/providers/gcp-provider.yaml | kubectl apply -f - ;\
 
 ## Create GCP Terrajet providerconfig
 create-terrajet-gcp-providerconfig:
-	yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${TENANT}")' ${current_dir}/dev/providers/terrajet-gcp-provider.yaml  | kubectl apply -f -
+	yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${TENANT}") | (.spec.credentials.secretRef.namespace |= "${TENANT}")' ${current_dir}/dev/providers/terrajet-gcp-provider.yaml  | kubectl apply -f -
 
 ## Create Helm providerconfig
 create-helm-providerconfig:

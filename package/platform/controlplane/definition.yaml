@@ -144,9 +144,6 @@ spec:
                                 type: object
                                 required: []
                                 properties:
-                                  namespace:
-                                    type: string
-                                    default: crossplane-system
                                   name:
                                     type: string
                                     default: default

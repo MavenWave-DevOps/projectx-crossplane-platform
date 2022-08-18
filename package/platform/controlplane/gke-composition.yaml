@@ -703,7 +703,7 @@ spec:
       fromFieldPath: spec.parameters.google.cluster.identity.source
       toFieldPath: spec.identity.source
     - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.google.cluster.identity.secretRef.namespace
+      fromFieldPath: spec.claimRef.namespace
       toFieldPath: spec.identity.secretRef.namespace
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.cluster.identity.secretRef.name
@@ -720,107 +720,111 @@ spec:
           fmt: "%s-controlplane"
     readinessChecks:
     - type: None
-# # Helm Providerconfig
-#   - name: helm-config
-#     base:
-#       apiVersion: helm.crossplane.io/v1beta1
-#       kind: ProviderConfig
-#       spec:
-#         credentials:
-#           source: Secret
-#           secretRef:
-#             namespace: crossplane-system
-#             key: kubeconfig
-#         identity:
-#           type: GoogleApplicationCredentials
-#           secretRef:
-#             namespace: # replace
-#             name: #replace
-#             key: #replace
-#     patches:
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: spec.claimRef.name
-#       toFieldPath: metadata.name
-#       transforms:
-#       - type: string
-#         string:
-#           fmt: "%s-controlplane"
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: spec.claimRef.name
-#       toFieldPath: spec.credentials.secretRef.name
-#       transforms:
-#       - type: string
-#         string:
-#           fmt: "%s-controlplane"
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: spec.parameters.google.cluster.identity.source
-#       toFieldPath: spec.identity.source
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: spec.parameters.google.cluster.identity.secretRef.namespace
-#       toFieldPath: spec.identity.secretRef.namespace
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: spec.parameters.google.cluster.identity.secretRef.name
-#       toFieldPath: spec.identity.secretRef.name
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: spec.parameters.google.cluster.identity.secretRef.key
-#       toFieldPath: spec.identity.secretRef.key
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: spec.claimRef.name
-#       toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/tenant]
-#       transforms:
-#       - type: string
-#         string:
-#           fmt: "%s-controlplane"
-#     readinessChecks:
-#     - type: None
-# # Crossplane
-#   - name: crossplane
-#     base:
-#       apiVersion: helm.crossplane.io/v1beta1
-#       kind: Release
-#       metadata:
-#         annotations: 
-#           crossplane.io/external-name: crossplane
-#       spec:
-#         forProvider:
-#           chart:
-#             name: crossplane
-#             repository: https://charts.crossplane.io/stable/
-#             version: 1.8.1
-#           namespace: crossplane-system
-#           set:
-#           - name: provider.packages[0]
-#             value: crossplane/provider-gcp:v0.21.0
-#           - name: provider.packages[1]
-#             value: crossplane/provider-kubernetes:v0.3.0
-#           - name: provider.packages[2]
-#             value: crossplane/provider-helm:v0.10.0
-#           # - name: provider.packages[3]
-#           #   value: crossplane/provider-jet-gcp:v0.2.0-preview
-#           - name: configuration.packages[0]
-#           wait: true
-#         rollbackLimit: 5
-#     patches:
-#     - type: PatchSet
-#       patchSetName: common
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: spec.claimRef.name
-#       toFieldPath: metadata.name
-#       transforms:
-#       - type: string
-#         string:
-#           fmt: "%s-crossplane"
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: spec.claimRef.name
-#       toFieldPath: spec.providerConfigRef.name
-#       transforms:
-#       - type: string
-#         string:
-#           fmt: "%s-controlplane"
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: spec.parameters.platform.version
-#       toFieldPath: spec.forProvider.set[3].value
-#       transforms:
-#       - type: string
-#         string:
-#           fmt: "ghcr.io/mavenwave-devops/projectx-crossplane-platform:%s"
+# Helm Providerconfig
+  - name: helm-config
+    base:
+      apiVersion: helm.crossplane.io/v1beta1
+      kind: ProviderConfig
+      spec:
+        credentials:
+          source: Secret
+          secretRef:
+            namespace: crossplane-system
+            key: kubeconfig
+        identity:
+          type: GoogleApplicationCredentials
+          secretRef:
+            namespace: # replace
+            name: #replace
+            key: #replace
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.credentials.secretRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.identity.source
+      toFieldPath: spec.identity.source
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.namespace
+      toFieldPath: spec.identity.secretRef.namespace
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.identity.secretRef.name
+      toFieldPath: spec.identity.secretRef.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.identity.secretRef.key
+      toFieldPath: spec.identity.secretRef.key
+    # - type: FromCompositeFieldPath
+    #   fromFieldPath: spec.claimRef.name
+    #   toFieldPath: metadata.labels[ref.projectx.mavenwave.dev/tenant]
+    #   transforms:
+    #   - type: string
+    #     string:
+    #       fmt: "%s-controlplane"
+    readinessChecks:
+    - type: None
+# Crossplane
+  - name: crossplane
+    base:
+      apiVersion: helm.crossplane.io/v1beta1
+      kind: Release
+      metadata:
+        annotations: 
+          crossplane.io/external-name: crossplane
+      spec:
+        forProvider:
+          chart:
+            name: crossplane
+            repository: https://charts.crossplane.io/stable/
+            version: 1.8.1
+          namespace: crossplane-system
+          set:
+          - name: provider.packages[0]
+            value: crossplane/provider-gcp:v0.21.0
+          - name: provider.packages[1]
+            value: crossplane/provider-kubernetes:v0.3.0
+          - name: provider.packages[2]
+            value: crossplane/provider-helm:v0.10.0
+          # - name: provider.packages[3]
+          #   value: crossplane/provider-jet-gcp:v0.2.0-preview
+          - name: configuration.packages[0]
+          wait: true
+        rollbackLimit: 5
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: providerConfig
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-crossplane"
+    # - type: FromCompositeFieldPath
+    #   fromFieldPath: metadata.name
+    #   toFieldPath: spec.providerConfigRef.name
+    #   transforms:
+    #   - type: string
+    #     string:
+    #       fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.platform.version
+      toFieldPath: spec.forProvider.set[3].value
+      transforms:
+      - type: string
+        string:
+          fmt: "ghcr.io/mavenwave-devops/projectx-crossplane-platform:%s"
