@@ -7,6 +7,9 @@ spec:
   names:
     kind: ControlPlane
     plural: controlplanes
+  claimNames:
+    kind: ControlPlaneClaim
+    plural: controlplaneclaims
   connectionSecretKeys:
   - kubeconfig
   defaultCompositionRef:

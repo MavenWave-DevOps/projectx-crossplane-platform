@@ -57,15 +57,15 @@ create-provider-secret: delete-provider-secret
 
 ## Create GCP providerconfig
 create-gcp-providerconfig:
-	yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${CPNAME}")' ${current_dir}/dev/providers/gcp-provider.yaml | kubectl apply -f - ;\
+	yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${TENANT}")' ${current_dir}/dev/providers/gcp-provider.yaml | kubectl apply -f - ;\
 
 ## Create GCP Terrajet providerconfig
 create-terrajet-gcp-providerconfig:
-	yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${CPNAME}")' ${current_dir}/dev/providers/terrajet-gcp-provider.yaml  | kubectl apply -f -
+	yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${TENANT}")' ${current_dir}/dev/providers/terrajet-gcp-provider.yaml  | kubectl apply -f -
 
 ## Create Helm providerconfig
 create-helm-providerconfig:
-	yq e '.metadata.name |= "${CPNAME}"' ${current_dir}/dev/providers/helm-provider.yaml | kubectl apply -f -
+	yq e '.metadata.name |= "${TENANT}"' ${current_dir}/dev/providers/helm-provider.yaml | kubectl apply -f -
 
 ## Create Helm Provider
 create-helm-provider:
@@ -74,11 +74,15 @@ create-helm-provider:
 ## Create providerconfigs
 create-providerconfigs: create-provider-secret create-gcp-providerconfig create-helm-providerconfig
 
+## Create K8s namespace
+create-ns:
+	kubectl create namespace ${TENANT} || true
+
 # Create local devlopment cluster
 create: create-cluster install-ingress-nginx install-crossplane create-helm-provider install-platform
 
 # Setup local devlopment cluster
-setup: create-providerconfigs
+setup: create-ns create-providerconfigs
 
 # TODO cleanup resources
 # Destroy local devlopment cluster
