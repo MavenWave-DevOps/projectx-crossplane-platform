@@ -172,11 +172,11 @@ spec:
           - name: provider.packages[0]
             value: crossplane/provider-gcp:v0.21.0
           - name: provider.packages[1]
-            value: crossplane/provider-jet-gcp:v0.2.0-preview
-          - name: provider.packages[2]
             value: crossplane/provider-kubernetes:v0.3.0
-          - name: provider.packages[3]
+          - name: provider.packages[2]
             value: crossplane/provider-helm:v0.10.0
+          # - name: provider.packages[3]
+          #   value: crossplane/provider-jet-gcp:v0.2.0-preview
           - name: configuration.packages[0]
           wait: true
         rollbackLimit: 5
@@ -199,8 +199,8 @@ spec:
           fmt: "%s-vcluster"
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.platform.version
-      toFieldPath: spec.forProvider.set[4].value
+      toFieldPath: spec.forProvider.set[3].value
       transforms:
       - type: string
         string:
-          fmt: "us.gcr.io/johnh-nextgen-devops/projectx-platform:%s"
+          fmt: "ghcr.io/mavenwave-devops/projectx-crossplane-platform:%s"

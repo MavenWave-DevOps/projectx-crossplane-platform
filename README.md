@@ -13,7 +13,7 @@ Perform the following to create a local Kind cluster and deploy crossplane and t
   ```
 * Wait until providers are healthy (`kubectl get providers`)
 * ```sh
-  make setup
+  make setup PROJECTID=<your gcp project ID> CPNAME=<name for your control plane>
   ```
 * Set your KUBECONFIG environment variable (`export KUBECONFIG=$PWD/kubeconfig`)
 * When finished use `make destroy` to delete the kind cluster. NOTE: This will not remove cloud resources created by Crossplane
