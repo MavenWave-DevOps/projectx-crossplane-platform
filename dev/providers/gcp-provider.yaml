@@ -5,7 +5,7 @@ metadata:
   name: default
   namespace: crossplane-system
 spec:
-  projectID:
+  projectID: wise-vim-352714
   credentials:
     source: Secret
     secretRef:

@@ -12,7 +12,7 @@ spec:
       version: main
     google:
       project:
-        id: bradw-nextgen-devops
+        id: johnh-nextgen-devops
         number: "809429613600"
       network:
         nodes:

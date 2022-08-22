@@ -203,4 +203,4 @@ spec:
       transforms:
       - type: string
         string:
-          fmt: "us.gcr.io/bradw-nextgen-devops/projectx-platform:%s"
+          fmt: "us.gcr.io/johnh-nextgen-devops/projectx-platform:%s"

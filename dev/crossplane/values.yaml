@@ -4,7 +4,7 @@ provider:
   # - crossplane/provider-jet-gcp:v0.2.0-preview
   - crossplane/provider-kubernetes:v0.3.0
   - crossplane/provider-helm:v0.10.0
-  # - us.gcr.io/bradw-nextgen-devops/provider-helm-amd64:v0.11.0-rc.7.gf3c0452
+  # - us.gcr.io/johnh-nextgen-devops/provider-helm-amd64:v0.11.0-rc.7.gf3c0452
 # configuration:
 #   packages:
-#   - us.gcr.io/bradw-nextgen-devops/projectx-platform:latest
+#   - us.gcr.io/johnh-nextgen-devops/projectx-platform:latest
