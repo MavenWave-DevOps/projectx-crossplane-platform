@@ -2,7 +2,7 @@
 apiVersion: platform.projectx.mavenwave.dev/v1alpha1
 kind: ControlPlane
 metadata:
-  name: a-team-gke
+  name: walker
 spec:
   compositionSelector:
     matchLabels:
@@ -12,8 +12,9 @@ spec:
       version: main
     google:
       project:
-        id: bradw-nextgen-devops
-        number: "809429613600"
+        id: ignite-walker-project-gbt
+        number: "679998316548"
+      # region: us-east
       network:
         nodes:
           cidr: 10.0.0.0/24

@@ -57,15 +57,18 @@ create-provider-secret: delete-provider-secret
 
 ## Create GCP providerconfig
 create-gcp-providerconfig:
-	yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${CPNAME}")' ${current_dir}/dev/providers/gcp-provider.yaml | kubectl apply -f - ;\
+	kubectl apply -f ${current_dir}/dev/providers/gcp-provider.yaml
+	# yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${CPNAME}")' ${current_dir}/dev/providers/gcp-provider.yaml | kubectl apply -f - ;\
 
 ## Create GCP Terrajet providerconfig
 create-terrajet-gcp-providerconfig:
-	yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${CPNAME}")' ${current_dir}/dev/providers/terrajet-gcp-provider.yaml  | kubectl apply -f -
+	kubectl apply -f ${current_dir}/dev/providers/terrajet-gcp-provider.yaml
+	# yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${CPNAME}")' ${current_dir}/dev/providers/terrajet-gcp-provider.yaml  | kubectl apply -f -
 
 ## Create Helm providerconfig
 create-helm-providerconfig:
-	yq e '.metadata.name |= "${CPNAME}"' ${current_dir}/dev/providers/helm-provider.yaml | kubectl apply -f -
+	kubectl apply -f ${current_dir}/dev/providers/helm-provider.yaml
+	# yq e '.metadata.name |= "${CPNAME}"' ${current_dir}/dev/providers/helm-provider.yaml | kubectl apply -f -
 
 ## Create Helm Provider
 create-helm-provider:
