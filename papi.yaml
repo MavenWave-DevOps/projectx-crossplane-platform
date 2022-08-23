@@ -1,0 +1,7 @@
+apiVersion: pkg.crossplane.io/v1
+kind: Configuration
+metadata:
+  name: platform
+spec:
+  package: ghcr.io/mavenwave-devops/projectx-crossplane-platform #Add the tag to pin a version
+  packagePullPolicy: Always
