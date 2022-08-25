@@ -250,7 +250,6 @@
             key: kubeconfig
         identity:
           type: GoogleApplicationCredentials
-          source: Secret
     patches:
     - type: PatchSet
       patchSetName: metadata

@@ -1,33 +1,3 @@
-# - op: add
-#   path: /spec/resources/-1
-#   value:
-#     name: crossplane-gcp-sa
-#     base:
-#       apiVersion: iam.gcp.crossplane.io/v1alpha1
-#       kind: ServiceAccount
-#       spec:
-#         forProvider:
-#     patches:
-#     - type: PatchSet
-#       patchSetName: name
-#     - type: PatchSet
-#       patchSetName: metadata
-#     - type: PatchSet
-#       patchSetName: providerConfig
-#     - type: FromCompositeFieldPath
-#       fromFieldPath: metadata.name
-#       toFieldPath: spec.forProvider.displayName
-#       transforms:
-#       - type: string
-#         string:
-#           fmt: "%s Crossplane"
-#     - type: ToCompositeFieldPath
-#       fromFieldPath: status.conditions
-#       toFieldPath: status.crossplane.google.serviceAccount.conditions
-#     - type: ToCompositeFieldPath
-#       fromFieldPath: status.atProvider.email
-#       toFieldPath: status.crossplane.google.serviceAccount.email
-
 - op: add
   path: /spec/resources/-1
   value:
@@ -342,7 +312,7 @@
             metadata:
               name: helm-provider
             spec:
-              package: us.gcr.io/bradw-nextgen-devops/provider-helm-amd64:v0.11.0-rc.18.g3fe27ae
+              package: bradkwadsworthmw/provider-helm-amd64:v0.11.0-rc.18.g3fe27ae
               controllerConfigRef:
                 name: kubernetes-provider
     patches:

@@ -1,9 +1,7 @@
 # Projectx Crossplane Platform
 
 ## Requirements
-* [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
-* [Helm](https://helm.sh/docs/intro/quickstart/)
-* [Kustomize](https://kubectl.docs.kubernetes.io/installation/kustomize/)
+* Docker
 * yq
 
 ## Development Setup
@@ -11,11 +9,11 @@ Perform the following to create a local Kind cluster and deploy crossplane and t
 * ```sh
   make create
   ```
+* Set your KUBECONFIG environment variable (`export KUBECONFIG=$PWD/kubeconfig`)
 * Wait until providers are healthy (`kubectl get providers`)
 * ```sh
   make setup PROJECTID=<your gcp project ID> CPNAME=<name for your control plane>
   ```
-* Set your KUBECONFIG environment variable (`export KUBECONFIG=$PWD/kubeconfig`)
 * When finished use `make destroy` to delete the kind cluster. NOTE: This will not remove cloud resources created by Crossplane
 
 ## Deploy Configuration

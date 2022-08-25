@@ -12,6 +12,6 @@ metadata:
   name: crossplane-provider-helm
 spec:
   # package: crossplane/provider-helm:v0.10.0
-  package: us.gcr.io/bradw-nextgen-devops/provider-helm-amd64:v0.11.0-rc.18.g3fe27ae
+  package: bradkwadsworthmw/provider-helm-amd64:v0.11.0-rc.18.g3fe27ae
   controllerConfigRef:
     name: kubernetes-provider

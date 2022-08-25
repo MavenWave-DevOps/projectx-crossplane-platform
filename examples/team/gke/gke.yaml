@@ -24,6 +24,9 @@ spec:
           cidr: 10.11.0.0/16
         services:
           cidr: 10.12.0.0/20
+      cluster:
+        identity:
+          secretRef: {}
       crossplane:
         serviceAccount:
           email: crossplane@bradw-nextgen-devops.iam.gserviceaccount.com

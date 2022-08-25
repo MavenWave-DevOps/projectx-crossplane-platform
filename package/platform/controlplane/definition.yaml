@@ -52,6 +52,7 @@ spec:
                     required:
                     - project
                     - network
+                    - cluster
                     - crossplane
                     properties:
                       project:
@@ -106,7 +107,8 @@ spec:
                                 description: Services subnet CIDR
                       cluster:
                         type: object
-                        required: []
+                        required:
+                        - identity
                         properties:
                           authorizedNetworks:
                             type: object
@@ -133,7 +135,8 @@ spec:
                             default: 50
                           identity:
                             type: object
-                            required: []
+                            required:
+                            - secretRef
                             properties:
                               source:
                                 type: string
