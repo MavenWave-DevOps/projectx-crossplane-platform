@@ -38,7 +38,7 @@ ifeq ($(UNAME_S),Darwin)
   endif
 endif
 ifeq ($(UNAME_S),Linux)
-	ifneq ($(filter %86,$(UNAME_P)),)
+	ifneq ($(filter x86_64,$(UNAME_P)),)
 		KIND_DOWNLOAD := curl -Lo ${KIND} https://kind.sigs.k8s.io/dl/v0.14.0/kind-linux-amd64
 		HELM_DOWNLOAD := curl -Lo ${WORKDIR}/helm.tar.gz https://get.helm.sh/helm-v3.9.4-linux-amd64.tar.gz
 		KUSTOMIZE_DOWNLOAD := curl -Lo ${WORKDIR}/kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.5.7/kustomize_v4.5.7_linux_amd64.tar.gz
