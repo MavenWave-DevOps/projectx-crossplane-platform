@@ -1,0 +1,330 @@
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: cluster
+    base:
+      apiVersion: container.gcp.crossplane.io/v1beta2
+      kind: Cluster
+      spec:
+        writeConnectionSecretToRef:
+          namespace: crossplane-system
+        forProvider:
+          addonsConfig:
+            configConnectorConfig:
+              enabled: true
+            gcePersistentDiskCSIDriverConfig:
+              enabled: true
+            horizontalPodAutoscaling:
+              disabled: false
+            httpLoadBalancing:
+              disabled: false
+          binaryAuthorization:
+            enabled: true
+          databaseEncryption:
+            state: ENCRYPTED
+            keyName:
+          initialClusterVersion: latest
+          ipAllocationPolicy:
+            clusterIpv4CidrBlock:
+            createSubnetwork: true
+            nodeIpv4CidrBlock:
+            servicesIpv4CidrBlock:
+            useIpAliases: true
+          location:
+          maintenancePolicy:
+            window:
+              dailyMaintenanceWindow:
+                startTime: 06:00
+          masterAuthorizedNetworksConfig:
+            enabled: false
+            cidrBlocks: []
+          networkConfig:
+            enableIntraNodeVisibility: true
+            datapathProvider: ADVANCED_DATAPATH
+          networkSelector:
+            matchControllerRef: true
+          privateClusterConfig:
+            masterIpv4CidrBlock:
+            enablePrivateNodes: true
+          releaseChannel:
+            channel: STABLE
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: name
+    - type: PatchSet
+      patchSetName: providerConfig
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.writeConnectionSecretToRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.region
+      toFieldPath: spec.forProvider.location
+      transforms:
+      - type: map
+        map:
+          regional-us-central: us-central1-c
+          us-central: us-central1
+          us-east: us-east1
+          us-west: us-west1
+    - type: FromCompositeFieldPath
+      fromFieldPath: status.google.kms.cryptoKey.name
+      toFieldPath: spec.forProvider.databaseEncryption.keyName
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.ipAllocationPolicy.subnetworkName
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.network.pods.cidr
+      toFieldPath: spec.forProvider.ipAllocationPolicy.clusterIpv4CidrBlock
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.network.nodes.cidr
+      toFieldPath: spec.forProvider.ipAllocationPolicy.nodeIpv4CidrBlock
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.network.services.cidr
+      toFieldPath: spec.forProvider.ipAllocationPolicy.servicesIpv4CidrBlock
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.authorizedNetworks.enabled
+      toFieldPath: spec.forProvider.masterAuthorizedNetworksConfig.enabled
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.authorizedNetworks.cidrBlocks
+      toFieldPath: spec.forProvider.masterAuthorizedNetworksConfig.cidrBlocks
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.masterIpv4CidrBlock
+      toFieldPath: spec.forProvider.privateClusterConfig.masterIpv4CidrBlock
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.project.id
+      toFieldPath: spec.forProvider.workloadIdentityConfig.workloadPool
+      policy:
+        fromFieldPath: Required
+      transforms:
+      - type: string
+        string:
+          fmt: "%s.svc.id.goog"
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.endpoint
+      toFieldPath: status.google.cluster.endpoint
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.selfLink
+      toFieldPath: status.google.cluster.selfLink
+    - type: ToCompositeFieldPath
+      fromFieldPath: spec.forProvider.clusterIpv4Cidr
+      toFieldPath: status.google.cluster.pods.cidr
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.servicesIpv4Cidr
+      toFieldPath: status.google.cluster.services.cidr
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.location
+      toFieldPath: status.google.cluster.location
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.google.cluster.conditions
+    connectionDetails:
+    - name: kubeconfig
+      fromConnectionSecretKey: kubeconfig
+    readinessChecks:
+    - type: MatchString
+      fieldPath: "status.atProvider.status"
+      matchString: "RUNNING"
+
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: nodepool
+    base:
+      apiVersion: container.gcp.crossplane.io/v1beta1
+      kind: NodePool
+      metadata:
+        annotations:
+          crossplane.io/external-name: default-nodepool
+      spec:
+        forProvider:
+          autoscaling:
+            enabled: true
+          clusterSelector:
+            matchControllerRef: true
+          config:
+            diskType: pd-ssd
+            authScopes:
+            - https://www.googleapis.com/auth/devstorage.read_only
+            - https://www.googleapis.com/auth/logging.write
+            - https://www.googleapis.com/auth/monitoring
+            - https://www.googleapis.com/auth/servicecontrol
+            - https://www.googleapis.com/auth/service.management.readonly
+            - https://www.googleapis.com/auth/trace.append
+            - https://www.googleapis.com/auth/cloud-platform
+            shieldedInstanceConfig:
+              enableSecureBoot: true
+            workloadMetadataConfig:
+              mode: GKE_METADATA
+          initialNodeCount: 1
+          management:
+            autoRepair: true
+            autoUpgrade: true
+          upgradeSettings:
+            maxSurge: 1
+            maxUnavailable: 1
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: providerConfig
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.min
+      toFieldPath: spec.forProvider.autoscaling.minNodeCount
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.max
+      toFieldPath: spec.forProvider.autoscaling.maxNodeCount
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.diskSizeGb
+      toFieldPath: spec.forProvider.config.diskSizeGb
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.machineType
+      toFieldPath: spec.forProvider.config.machineType
+      policy:
+        fromFieldPath: Required
+      transforms:
+      - type: map
+        map:
+          small: e2-medium
+          medium: n2-standard-4
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.config.tags[0]
+      transforms:
+        - type: string
+          string:
+            fmt: "%s-controlplane-default-pool"
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.atProvider.selfLink
+      toFieldPath: status.google.nodePool.selfLink
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.google.nodePool.conditions
+    readinessChecks:
+    - type: MatchString
+      fieldPath: status.atProvider.status
+      matchString: RUNNING
+
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: kubernetes-config
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: ProviderConfig
+      spec:
+        credentials:
+          source: Secret
+          secretRef:
+            namespace: crossplane-system
+            key: kubeconfig
+        identity:
+          type: GoogleApplicationCredentials
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.credentials.secretRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.identity.source
+      toFieldPath: spec.identity.source
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.namespace
+      toFieldPath: spec.identity.secretRef.namespace
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.identity.secretRef.name
+      toFieldPath: spec.identity.secretRef.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.identity.secretRef.key
+      toFieldPath: spec.identity.secretRef.key
+    readinessChecks:
+    - type: None
+
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: helm-config
+    base:
+      apiVersion: helm.crossplane.io/v1beta1
+      kind: ProviderConfig
+      spec:
+        credentials:
+          source: Secret
+          secretRef:
+            namespace: crossplane-system
+            key: kubeconfig
+        identity:
+          type: GoogleApplicationCredentials
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.credentials.secretRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.identity.source
+      toFieldPath: spec.identity.source
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.namespace
+      toFieldPath: spec.identity.secretRef.namespace
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.identity.secretRef.name
+      toFieldPath: spec.identity.secretRef.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.identity.secretRef.key
+      toFieldPath: spec.identity.secretRef.key
+    readinessChecks:
+    - type: None

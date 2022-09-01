@@ -3,3 +3,4 @@ hacking/examples/overlays/local/*
 **kubeconfig
 **.xpkg
 build
+.work

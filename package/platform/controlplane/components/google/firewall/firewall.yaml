@@ -1,0 +1,113 @@
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: inter-node-fwrule
+    base:
+      apiVersion: compute.gcp.crossplane.io/v1alpha1
+      kind: Firewall
+      spec:
+        forProvider:
+          networkSelector:
+            matchControllerRef: true
+          allowed:
+          - IPProtocol: tcp
+          - IPProtocol: udp
+          - IPProtocol: icmp
+          - IPProtocol: sctp
+          - IPProtocol: esp
+          - IPProtocol: ah
+          direction: EGRESS
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: providerConfig
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane-intra-cluster-egress"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-cp-intra-cluster-egress"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.masterIpv4CidrBlock
+      toFieldPath: spec.forProvider.destinationRanges[0]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.network.nodes.cidr
+      toFieldPath: spec.forProvider.destinationRanges[1]
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.network.pods.cidr
+      toFieldPath: spec.forProvider.destinationRanges[2]
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.targetTags[0]
+      transforms:
+        - type: string
+          string:
+            fmt: "%s-controlplane-default-pool"
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.google.network.clusterEgressFw.conditions
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: webhooks-fwrule
+    base:
+      apiVersion: compute.gcp.crossplane.io/v1alpha1
+      kind: Firewall
+      spec:
+        forProvider:
+          networkSelector:
+            matchControllerRef: true
+          allowed:
+          - IPProtocol: tcp
+            ports:
+            - "8443"
+            - "9443"
+            - "15017"
+          direction: INGRESS
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: providerConfig
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane-webhooks"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-cp-webhooks"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.cluster.masterIpv4CidrBlock
+      toFieldPath: spec.forProvider.sourceRanges[0]
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.forProvider.targetTags[0]
+      transforms:
+        - type: string
+          string:
+            fmt: "%s-controlplane-default-pool"
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.google.network.webhooksFw.conditions

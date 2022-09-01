@@ -1,0 +1,9 @@
+---
+apiVersion: gcp.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: b-team
+spec:
+  projectID: bradw-nextgen-devops
+  credentials:
+    source: InjectedIdentity

@@ -1,0 +1,82 @@
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: crossplane
+    base:
+      apiVersion: helm.crossplane.io/v1beta1
+      kind: Release
+      metadata:
+        annotations: 
+          crossplane.io/external-name: crossplane
+      spec:
+        forProvider:
+          chart:
+            name: crossplane
+            repository: https://charts.crossplane.io/stable/
+            version: 1.9.0
+          namespace: crossplane-system
+          wait: true
+        rollbackLimit: 5
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-crossplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.providerConfigRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: ToCompositeFieldPath
+      fromFieldPath: status.conditions
+      toFieldPath: status.crossplane.conditions
+
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: crossplane-platform-config
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: pkg.crossplane.io/v1
+            kind: Configuration
+            metadata:
+              name: platform
+            spec:
+              package: ghcr.io/mavenwave-devops/projectx-crossplane-platform:main
+              packagePullPolicy: Always
+              skipDependencyResolution: true
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-crossplane-platform-config"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.providerConfigRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.platform.version
+      toFieldPath: spec.forProvider.manifest.spec.package
+      transforms:
+      - type: string
+        string:
+          fmt: "ghcr.io/mavenwave-devops/projectx-crossplane-platform:%s"

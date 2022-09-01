@@ -1,0 +1,334 @@
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: crossplane-gcp-k8s-sa
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: v1
+            kind: ServiceAccount
+            metadata:
+              name: gcp-provider
+              namespace: crossplane-system
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-crossplane-gcp-sa"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.providerConfigRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.crossplane.serviceAccount.email
+      toFieldPath: spec.forProvider.manifest.metadata.annotations[iam.gke.io/gcp-service-account]
+
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: crossplane-gcp-sa-iam
+    base:
+      apiVersion: iam.gcp.crossplane.io/v1alpha1
+      kind: ServiceAccountPolicy
+      spec:
+        forProvider:
+          policy:
+            bindings:
+            - role: roles/iam.workloadIdentityUser
+              members: []
+    patches:
+    - type: PatchSet
+      patchSetName: name
+    - type: PatchSet
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: providerConfig
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.parameters.google.project.id
+        - fromFieldPath: spec.parameters.google.crossplane.serviceAccount.email
+        strategy: string
+        string:
+          fmt: "projects/%s/serviceAccounts/%s"
+      toFieldPath: spec.forProvider.serviceAccount
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.project.id
+      toFieldPath: spec.forProvider.policy.bindings[0].members[0]
+      transforms:
+      - type: string
+        string:
+          fmt: "serviceAccount:%s.svc.id.goog[crossplane-system/gcp-provider]"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.project.id
+      toFieldPath: spec.forProvider.policy.bindings[0].members[1]
+      transforms:
+      - type: string
+        string:
+          fmt: "serviceAccount:%s.svc.id.goog[crossplane-system/kubernetes-provider]"
+
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: crossplane-kubernetes-k8s-sa
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: v1
+            kind: ServiceAccount
+            metadata:
+              name: kubernetes-provider
+              namespace: crossplane-system
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-crossplane-kubernetes-sa"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.providerConfigRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.crossplane.serviceAccount.email
+      toFieldPath: spec.forProvider.manifest.metadata.annotations[iam.gke.io/gcp-service-account]
+
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: crossplane-kubernetes-rbac
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: rbac.authorization.k8s.io/v1
+            kind: ClusterRoleBinding
+            metadata:
+              name: crossplane-provider-rb
+            subjects:
+            - kind: ServiceAccount
+              name: gcp-provider
+              namespace: crossplane-system
+            - kind: ServiceAccount
+              name: kubernetes-provider
+              namespace: crossplane-system
+            roleRef:
+              kind: ClusterRole
+              name: cluster-admin
+              apiGroup: rbac.authorization.k8s.io
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-crossplane-kubernetes-sa"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.providerConfigRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: crossplane-gcp-controller-config
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: pkg.crossplane.io/v1alpha1
+            kind: ControllerConfig
+            metadata:
+              name: gcp-provider
+            spec:
+              serviceAccountName: gcp-provider
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-crossplane-gcp-controller-config"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.providerConfigRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: crossplane-kubernetes-controller-config
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: pkg.crossplane.io/v1alpha1
+            kind: ControllerConfig
+            metadata:
+              name: kubernetes-provider
+            spec:
+              serviceAccountName: kubernetes-provider
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-crossplane-kubernetes-controller-config"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.providerConfigRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: crossplane-gcp-provider
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: pkg.crossplane.io/v1
+            kind: Provider
+            metadata:
+              name: gcp-provider
+            spec:
+              package: crossplane/provider-gcp:v0.21.0
+              controllerConfigRef:
+                name: gcp-provider
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-crossplane-gcp-provider"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.providerConfigRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: crossplane-kubernetes-provider
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: pkg.crossplane.io/v1
+            kind: Provider
+            metadata:
+              name: kubernetes-provider
+            spec:
+              package: crossplane/provider-kubernetes:v0.3.0
+              controllerConfigRef:
+                name: kubernetes-provider
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-crossplane-kubernetes-provider"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.providerConfigRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+
+- op: add
+  path: /spec/resources/-1
+  value:
+    name: crossplane-helm-provider
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: pkg.crossplane.io/v1
+            kind: Provider
+            metadata:
+              name: helm-provider
+            spec:
+              package: bradkwadsworthmw/provider-helm-amd64:v0.11.0-rc.18.g3fe27ae
+              controllerConfigRef:
+                name: kubernetes-provider
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-crossplane-helm-provider"
+    - type: FromCompositeFieldPath
+      fromFieldPath: metadata.name
+      toFieldPath: spec.providerConfigRef.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"

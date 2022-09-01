@@ -3,7 +3,6 @@ kind: Kustomization
 
 resources:
 - https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
-# - github.com/kubernetes/ingress-nginx/deploy/static/provider/kind?ref=ingress-nginx-3.15.2
 
 patchesJson6902:
 - target:

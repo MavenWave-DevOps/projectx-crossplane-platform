@@ -1,0 +1,39 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: projectx-platform-controlplane
+  labels:
+    crossplane.io/xrd: controlplanes.platform.projectx.mavenwave.dev
+spec:
+  compositeTypeRef:
+    apiVersion: platform.projectx.mavenwave.dev/v1alpha1
+    kind: ControlPlane
+  writeConnectionSecretsToNamespace: crossplane-system
+  patchSets:
+  - name: name
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath:  metadata.name
+      toFieldPath: metadata.name
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+    - type: FromCompositeFieldPath
+      fromFieldPath:  metadata.name
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-controlplane"
+  - name: providerConfig
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.namespace
+      toFieldPath: spec.providerConfigRef.name
+  - name: metadata
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath:  metadata.name
+      toFieldPath: metadata.labels[platform.projectx.mavenwave.dev/controlplane]
+  resources: []
