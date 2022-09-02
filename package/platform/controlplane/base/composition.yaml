@@ -12,20 +12,24 @@ spec:
   patchSets:
   - name: name
     patches:
-    - type: FromCompositeFieldPath
-      fromFieldPath:  metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-controlplane"
-    - type: FromCompositeFieldPath
-      fromFieldPath:  metadata.name
+          fmt: "%s-%s"
       toFieldPath: metadata.annotations[crossplane.io/external-name]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
   - name: providerConfig
     patches:
     - type: FromCompositeFieldPath
@@ -33,7 +37,13 @@ spec:
       toFieldPath: spec.providerConfigRef.name
   - name: metadata
     patches:
-    - type: FromCompositeFieldPath
-      fromFieldPath:  metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s"
       toFieldPath: metadata.labels[platform.projectx.mavenwave.dev/controlplane]
   resources: []

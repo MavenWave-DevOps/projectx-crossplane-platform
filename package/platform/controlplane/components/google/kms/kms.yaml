@@ -13,13 +13,15 @@
       patchSetName: metadata
     - type: PatchSet
       patchSetName: providerConfig
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-controlplane"
+          fmt: "%s-%s"
+      toFieldPath: metadata.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.claimRef.namespace
       toFieldPath: metadata.annotations[crossplane.io/external-name]
@@ -43,6 +45,7 @@
     - type: ToCompositeFieldPath
       fromFieldPath: status.conditions
       toFieldPath: status.google.kms.keyRing.conditions
+
 - op: add
   path: /spec/resources/-1
   value:
@@ -60,26 +63,25 @@
       patchSetName: metadata
     - type: PatchSet
       patchSetName: providerConfig
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-controlplane"
+          fmt: "%s-%s"
+      toFieldPath: metadata.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.claimRef.name
       toFieldPath: metadata.annotations[crossplane.io/external-name]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
     - type: ToCompositeFieldPath
       fromFieldPath: status.atProvider.name
       toFieldPath: status.google.kms.cryptoKey.name
     - type: ToCompositeFieldPath
       fromFieldPath: status.conditions
       toFieldPath: status.google.kms.cryptoKey.conditions
+      
 - op: add
   path: /spec/resources/-1
   value:

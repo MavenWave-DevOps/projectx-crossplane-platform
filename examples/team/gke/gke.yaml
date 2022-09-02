@@ -2,7 +2,7 @@
 apiVersion: platform.projectx.mavenwave.dev/v1alpha1
 kind: ControlPlaneClaim
 metadata:
-  name: b-team
+  name: controlplane
   namespace: b-team
 spec:
   compositionSelector:

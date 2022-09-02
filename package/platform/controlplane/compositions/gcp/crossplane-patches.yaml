@@ -16,20 +16,24 @@
     patches:
     - type: PatchSet
       patchSetName: metadata
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-crossplane-gcp-sa"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-crossplane-gcp-sa"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+          fmt: "%s-%s"
       toFieldPath: spec.providerConfigRef.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.crossplane.serviceAccount.email
       toFieldPath: spec.forProvider.manifest.metadata.annotations[iam.gke.io/gcp-service-account]
@@ -96,20 +100,24 @@
     patches:
     - type: PatchSet
       patchSetName: metadata
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-crossplane-kubernetes-sa"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-crossplane-kubernetes-sa"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+          fmt: "%s-%s"
       toFieldPath: spec.providerConfigRef.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.crossplane.serviceAccount.email
       toFieldPath: spec.forProvider.manifest.metadata.annotations[iam.gke.io/gcp-service-account]
@@ -142,20 +150,24 @@
     patches:
     - type: PatchSet
       patchSetName: metadata
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-crossplane-kubernetes-sa"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-crossplane-kubernetes-sa"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+          fmt: "%s-%s"
       toFieldPath: spec.providerConfigRef.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
 
 - op: add
   path: /spec/resources/-1
@@ -176,20 +188,24 @@
     patches:
     - type: PatchSet
       patchSetName: metadata
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-crossplane-gcp-controller-config"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-crossplane-gcp-controller-config"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+          fmt: "%s-%s"
       toFieldPath: spec.providerConfigRef.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
 
 - op: add
   path: /spec/resources/-1
@@ -210,20 +226,24 @@
     patches:
     - type: PatchSet
       patchSetName: metadata
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-crossplane-kubernetes-controller-config"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-crossplane-kubernetes-controller-config"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+          fmt: "%s-%s"
       toFieldPath: spec.providerConfigRef.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
 
 - op: add
   path: /spec/resources/-1
@@ -246,20 +266,24 @@
     patches:
     - type: PatchSet
       patchSetName: metadata
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-crossplane-gcp-provider"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-crossplane-gcp-provider"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+          fmt: "%s-%s"
       toFieldPath: spec.providerConfigRef.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
 
 - op: add
   path: /spec/resources/-1
@@ -282,20 +306,24 @@
     patches:
     - type: PatchSet
       patchSetName: metadata
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-crossplane-kubernetes-provider"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-crossplane-kubernetes-provider"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+          fmt: "%s-%s"
       toFieldPath: spec.providerConfigRef.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
 
 - op: add
   path: /spec/resources/-1
@@ -318,17 +346,21 @@
     patches:
     - type: PatchSet
       patchSetName: metadata
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-crossplane-helm-provider"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-crossplane-helm-provider"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+          fmt: "%s-%s"
       toFieldPath: spec.providerConfigRef.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"

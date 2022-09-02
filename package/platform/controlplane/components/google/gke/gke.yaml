@@ -55,13 +55,15 @@
       patchSetName: name
     - type: PatchSet
       patchSetName: providerConfig
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.writeConnectionSecretToRef.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-controlplane"
+          fmt: "%s-%s"
+      toFieldPath: spec.writeConnectionSecretToRef.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.region
       toFieldPath: spec.forProvider.location
@@ -75,13 +77,15 @@
     - type: FromCompositeFieldPath
       fromFieldPath: status.google.kms.cryptoKey.name
       toFieldPath: spec.forProvider.databaseEncryption.keyName
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.ipAllocationPolicy.subnetworkName
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-controlplane"
+          fmt: "%s-%s"
+      toFieldPath: spec.forProvider.ipAllocationPolicy.subnetworkName
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.network.pods.cidr
       toFieldPath: spec.forProvider.ipAllocationPolicy.clusterIpv4CidrBlock
@@ -185,13 +189,15 @@
       patchSetName: metadata
     - type: PatchSet
       patchSetName: providerConfig
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-controlplane"
+          fmt: "%s-%s"
+      toFieldPath: metadata.name
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.cluster.min
       toFieldPath: spec.forProvider.autoscaling.minNodeCount
@@ -217,13 +223,15 @@
         map:
           small: e2-medium
           medium: n2-standard-4
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-controlplane-default-pool"
       toFieldPath: spec.forProvider.config.tags[0]
-      transforms:
-        - type: string
-          string:
-            fmt: "%s-controlplane-default-pool"
     - type: ToCompositeFieldPath
       fromFieldPath: status.atProvider.selfLink
       toFieldPath: status.google.nodePool.selfLink
@@ -253,20 +261,24 @@
     patches:
     - type: PatchSet
       patchSetName: metadata
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-controlplane"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+          fmt: "%s-%s"
       toFieldPath: spec.credentials.secretRef.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.cluster.identity.source
       toFieldPath: spec.identity.source
@@ -300,20 +312,24 @@
     patches:
     - type: PatchSet
       patchSetName: metadata
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-controlplane"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+          fmt: "%s-%s"
       toFieldPath: spec.credentials.secretRef.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.cluster.identity.source
       toFieldPath: spec.identity.source
