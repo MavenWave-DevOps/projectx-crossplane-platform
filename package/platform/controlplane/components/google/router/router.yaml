@@ -29,13 +29,15 @@
           us-central: us-central1
           us-east: us-east1
           us-west: us-west1
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: spec.forProvider.nats[0].name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-controlplane"
+          fmt: "%s-%s"
+      toFieldPath: spec.forProvider.nats[0].name
     - type: ToCompositeFieldPath
       fromFieldPath: status.conditions
       toFieldPath: status.google.network.router.conditions

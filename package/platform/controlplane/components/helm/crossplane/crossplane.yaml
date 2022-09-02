@@ -20,20 +20,24 @@
     patches:
     - type: PatchSet
       patchSetName: metadata
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-crossplane"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+          fmt: "%s-%s"
       toFieldPath: spec.providerConfigRef.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
     - type: ToCompositeFieldPath
       fromFieldPath: status.conditions
       toFieldPath: status.crossplane.conditions
@@ -59,20 +63,24 @@
     patches:
     - type: PatchSet
       patchSetName: metadata
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-crossplane-platform-config"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-crossplane-platform-config"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+          fmt: "%s-%s"
       toFieldPath: spec.providerConfigRef.name
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-controlplane"
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.platform.version
       toFieldPath: spec.forProvider.manifest.spec.package

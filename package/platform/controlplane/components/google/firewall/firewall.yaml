@@ -22,20 +22,31 @@
       patchSetName: metadata
     - type: PatchSet
       patchSetName: providerConfig
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-intra-cluster-egress"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    # - type: FromCompositeFieldPath
+    #   fromFieldPath: metadata.name
+    #   toFieldPath: metadata.annotations[crossplane.io/external-name]
+    #   transforms:
+    #   - type: string
+    #     string:
+    #       fmt: "%s-cp-intra-cluster-egress"
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-controlplane-intra-cluster-egress"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.annotations[crossplane.io/external-name]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-cp-intra-cluster-egress"
+          fmt: "Intra cluster egress for %s-%s cluster"
+      toFieldPath: spec.forProvider.description
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.cluster.masterIpv4CidrBlock
       toFieldPath: spec.forProvider.destinationRanges[0]
@@ -49,16 +60,19 @@
       toFieldPath: spec.forProvider.destinationRanges[2]
       policy:
         fromFieldPath: Required
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-controlplane-default-pool"
       toFieldPath: spec.forProvider.targetTags[0]
-      transforms:
-        - type: string
-          string:
-            fmt: "%s-controlplane-default-pool"
     - type: ToCompositeFieldPath
       fromFieldPath: status.conditions
       toFieldPath: status.google.network.clusterEgressFw.conditions
+      
 - op: add
   path: /spec/resources/-1
   value:
@@ -82,32 +96,45 @@
       patchSetName: metadata
     - type: PatchSet
       patchSetName: providerConfig
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-webhooks"
       toFieldPath: metadata.name
-      transforms:
-      - type: string
+    # - type: FromCompositeFieldPath
+    #   fromFieldPath: metadata.name
+    #   toFieldPath: metadata.annotations[crossplane.io/external-name]
+    #   transforms:
+    #   - type: string
+    #     string:
+    #       fmt: "%s-cp-webhooks"
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
         string:
-          fmt: "%s-controlplane-webhooks"
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
-      toFieldPath: metadata.annotations[crossplane.io/external-name]
-      transforms:
-      - type: string
-        string:
-          fmt: "%s-cp-webhooks"
+          fmt: "Allow webhooks for %s-%s cluster"
+      toFieldPath: spec.forProvider.description
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.google.cluster.masterIpv4CidrBlock
       toFieldPath: spec.forProvider.sourceRanges[0]
       policy:
         fromFieldPath: Required
-    - type: FromCompositeFieldPath
-      fromFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-controlplane-default-pool"
       toFieldPath: spec.forProvider.targetTags[0]
-      transforms:
-        - type: string
-          string:
-            fmt: "%s-controlplane-default-pool"
     - type: ToCompositeFieldPath
       fromFieldPath: status.conditions
       toFieldPath: status.google.network.webhooksFw.conditions
