@@ -1,22 +1,38 @@
-# Projectx Crossplane Platform
+# ProjectX Bootstrap DevOps Control Plane
+
+## Quick Start
+This quick start will cover:
+* Installing dependencies for the bootstrap
+* Creating DevOps Control Plane kind cluster
+* Destroying the kind cluster
 
 ## Requirements
-* Docker
+* Docker or Rancher Desktop
+  * For Rancher Desktop: open kubernetes settings and disable kubernetes
 * yq
+```
+brew install yq
+```
 
-## Development Setup
-Perform the following to create a local Kind cluster and deploy crossplane and the custom compositions to the local cluster.
+## Setup DevOps Control Plane
+* Clone this repository
 * ```sh
   make create
   ```
-* Set your KUBECONFIG environment variable (`export KUBECONFIG=$PWD/kubeconfig`)
-* Wait until providers are healthy (`kubectl get providers`)
 * ```sh
-  make setup PROJECTID=<your gcp project ID> CPNAME=<name for your control plane>
+  export KUBECONFIG=$PWD/kubeconfig
   ```
-* When finished use `make destroy` to delete the kind cluster. NOTE: This will not remove cloud resources created by Crossplane
+  * Set Kubeconfig environment variable
+* ```sh
+  make setup PROJECTID=<gcp project id> CPNAME=<control plane name> TENANT=<tenant id>
+  ```
+## Destroy Local Control Plane
+* ```sh
+  make destroy
+  ```
+* This will delete the kind cluster. This will not remove any cloud resources created by the cluster!
 
-## Deploy Configuration
+# Deploy Configuration
 Apply the following manifest to use the Platform API in your cluster.
 ```yaml
 apiVersion: pkg.crossplane.io/v1
