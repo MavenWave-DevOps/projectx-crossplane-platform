@@ -22,6 +22,10 @@ brew install yq
 * ```sh
   export KUBECONFIG=$PWD/kubeconfig
   ```
+* Wait until providers are healthy
+  ```sh
+  kubectl get providers
+  ```
   * Set Kubeconfig environment variable
 * ```sh
   make setup PROJECTID=<gcp project id> CPNAME=<control plane name> TENANT=<tenant id>
