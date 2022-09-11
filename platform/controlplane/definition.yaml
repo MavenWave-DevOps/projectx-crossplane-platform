@@ -1,0 +1,252 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: controlplanes.platform.projectx.mavenwave.dev
+spec:
+  group: platform.projectx.mavenwave.dev
+  names:
+    kind: ControlPlane
+    plural: controlplanes
+  claimNames:
+    kind: ControlPlaneClaim
+    plural: controlplaneclaims
+  connectionSecretKeys:
+  - kubeconfig
+  defaultCompositionRef:
+    name: gcp-standard-projectx-platform-controlplane
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            required:
+            - parameters
+            properties:
+              parameters:
+                type: object
+                required: []
+                properties:
+                  platform:
+                    type: object
+                    properties:
+                      version:
+                        type: string
+                        default: main
+                  region:
+                    type: string
+                    enum:
+                    - regional-us-central
+                    - us-central
+                    - us-east
+                    - us-west
+                    default: regional-us-central
+                    description: Resources region
+                  controlPlaneIpv4CidrBlock:
+                    type: string
+                    description: The IP range in CIDR notation to use for the hosted master network
+                    default: 172.16.0.0/28
+                  nodeCidr:
+                    type: string
+                    description: Nodes subnet CIDR
+                    default: 10.0.0.0/24
+                  podCidr:
+                    type: string
+                    description: Pods subnet CIDR
+                    default: 10.1.0.0/16
+                  serviceCidr:
+                    type: string
+                    description: Services subnet CIDR
+                    default: 10.2.0.0/20
+                  authorizedNetworks:
+                    type: object
+                    description: The configuration options for master authorized networks feature
+                    properties:
+                      enabled:
+                        type: boolean
+                        description: Whether or not master authorized networks is enabled
+                        default: false
+                      cidrBlocks:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            displayName:
+                              type: string
+                              description: An optional field for users to identify CIDR blocks
+                            cidrBlock:
+                              type: string
+                              description: Must be specified in CIDR notation
+                  diskSizeGb:
+                    type: integer
+                    description: Node disk size in GB
+                    default: 50
+                  identity:
+                    type: object
+                    required: []
+                    properties:
+                      source:
+                        type: string
+                        default: InjectedIdentity
+                      secretRefName:
+                        type: string
+                        default: default
+                      secretRefKey: 
+                        type: string
+                        default: credentials
+                  nodeMachineType:
+                    type: string
+                    enum:
+                    - small
+                    - medium
+                    description: Node pool machine type
+                    default: small
+                  nodeMin:
+                    type: integer
+                    description: Minimum number of cluster nodes
+                    default: 1
+                  nodeMax:
+                    type: integer
+                    description: Maximum number of cluster nodes
+                    default: 10
+                  google:
+                    type: object
+                    required:
+                    - project
+                    - crossplaneServiceAccountEmail
+                    properties:
+                      project:
+                        type: object
+                        required:
+                        - number
+                        - id
+                        properties:
+                          number:
+                            type: string
+                          id:
+                            type: string   
+                      crossplaneServiceAccountEmail:
+                        type: string
+          status:
+            type: object
+            properties:
+              network:
+                type: object
+                properties:
+                  vpc:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      selfLink:
+                        type: string
+                      conditions:
+                        type: array
+                        items:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                  clusterEgressFw:
+                    type: object
+                    properties:
+                      conditions:
+                        type: array
+                        items:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                  webhooksFw:
+                    type: object
+                    properties:
+                      conditions:
+                        type: array
+                        items:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                  router:
+                    type: object
+                    properties:
+                      conditions:
+                        type: array
+                        items:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+              kms:
+                type: object
+                properties:
+                  keyRing:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      conditions:
+                        type: array
+                        items:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                  cryptoKey:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      conditions:
+                        type: array
+                        items:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                  cryptoKeyPolicy:
+                    type: object
+                    properties:
+                      conditions:
+                        type: array
+                        items:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+              cluster:
+                type: object
+                properties:
+                  conditions:
+                    type: array
+                    items:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                  endpoint:
+                    type: string
+                  selfLink:
+                    type: string
+                  location:
+                    type: string
+                  pods:
+                    type: object
+                    properties:
+                      cidr:
+                        type: string
+                  services:
+                    type: object
+                    properties:
+                      cidr:
+                        type: string
+              nodePool:
+                type: object
+                properties:
+                  conditions:
+                    type: array
+                    items:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                  selfLink:
+                    type: string
+              crossplane:
+                type: object
+                properties:
+                  conditions:
+                    type: array
+                    items:
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                  google:
+                    type: object
+                    properties:
+                      
