@@ -2,14 +2,14 @@
 apiVersion: platform.projectx.mavenwave.dev/v1alpha1
 kind: ControlPlaneClaim
 metadata:
-  name: controlplane
+  name: demo
   namespace: a-team
 spec:
   compositionSelector:
     matchLabels:
       provider: gcp
   writeConnectionSecretToRef:
-    name: a-team-controlplane
+    name: a-team-demo
   parameters:
     platform:
       version: latest
@@ -17,18 +17,11 @@ spec:
       project:
         id: bradw-nextgen-devops
         number: "809429613600"
-      network:
-        nodes:
-          cidr: 10.0.0.0/24
-        pods:
-          cidr: 10.1.0.0/16
-        services:
-          cidr: 10.2.0.0/20
-      cluster:
-        identity:
-          source: Secret
-          secretRef:
-            name: gcp-default
-      crossplane:
-        serviceAccount:
-          email: crossplane@bradw-nextgen-devops.iam.gserviceaccount.com
+      crossplaneServiceAccountEmail: crossplane@bradw-nextgen-devops.iam.gserviceaccount.com
+    nodeCidr: 10.0.0.0/24
+    podCidr: 10.1.0.0/16
+    serviceCidr: 10.2.0.0/20
+    identity:
+      source: Secret
+      secretRefName: k8s-default
+     

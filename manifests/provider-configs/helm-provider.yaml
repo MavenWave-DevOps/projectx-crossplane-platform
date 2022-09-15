@@ -6,5 +6,9 @@ metadata:
   namespace: crossplane-system
 spec:
   credentials:
-    source: InjectedIdentity
+    source: Secret
+    secretRef:
+      key: credentials
+      name: k8s-default
+      namespace: crossplane-system
 
