@@ -1,6 +1,7 @@
 hacking/provider/overlays/local/*
 hacking/examples/overlays/local/*
 **kubeconfig
+**kubeconfig.yaml
 **.xpkg
 build
 .work
