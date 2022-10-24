@@ -3,7 +3,6 @@ apiVersion: platform.projectx.mavenwave.dev/v1alpha1
 kind: ClusterClaim
 metadata:
   name: dev
-  namespace: a-team
 spec:
   compositionSelector:
     matchLabels:
