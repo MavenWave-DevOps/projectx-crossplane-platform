@@ -1,21 +1,23 @@
 ---
-apiVersion: platform.projectx.mavenwave.dev/v1alpha1
+apiVersion: platform.tidalwave.mavenwave.dev/v1alpha1
 kind: ClusterClaim
 metadata:
-  name: dev
+  name: example
 spec:
   compositionSelector:
     matchLabels:
       provider: gcp
-      class: standard
+      class: simple
   writeConnectionSecretToRef:
-    name: a-team-dev
+    name: dev-cluster
   parameters:
+    nodeMachineType: medium
     google:
       project:
         id: bradw-nextgen-devops
         number: "809429613600"
-    identity: {}
+    identity:
+      secretRefName: gcp-default
     # network:
     #   nodes:
     #     cidr: 10.0.0.0/24

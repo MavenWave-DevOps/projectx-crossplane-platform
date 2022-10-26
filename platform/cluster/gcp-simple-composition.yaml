@@ -1,14 +1,14 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: gcp-standard-cluster-platform-projectx
+  name: gcp-simple-cluster-platform-tidalwave
   labels:
     provider: gcp
-    class: standard
-    crossplane.io/xrd: clusters.platform.projectx.mavenwave.dev
+    class: simple
+    crossplane.io/xrd: clusters.platform.tidalwave.mavenwave.dev
 spec:
   compositeTypeRef:
-    apiVersion: platform.projectx.mavenwave.dev/v1alpha1
+    apiVersion: platform.tidalwave.mavenwave.dev/v1alpha1
     kind: Cluster
   writeConnectionSecretsToNamespace: crossplane-system
   patchSets:
@@ -23,6 +23,8 @@ spec:
         string:
           fmt: "%s-%s"
       toFieldPath: metadata.name
+  - name: external-name
+    patches:
     - type: CombineFromComposite
       combine:
         variables:
@@ -47,8 +49,9 @@ spec:
         strategy: string
         string:
           fmt: "%s-%s"
-      toFieldPath: metadata.labels[platform.projectx.mavenwave.dev/cluster]
+      toFieldPath: metadata.labels[platform.tidalwave.mavenwave.dev/cluster]
   resources:
+# VPC
   - name: network
     base:
       apiVersion: compute.gcp.crossplane.io/v1beta1
@@ -61,6 +64,8 @@ spec:
     patches:
     - type: PatchSet
       patchSetName: name
+    - type: PatchSet
+      patchSetName: external-name
     - type: PatchSet
       patchSetName: providerConfig
     - type: PatchSet
@@ -75,6 +80,7 @@ spec:
       fromFieldPath: status.conditions
       toFieldPath: status.network.vpc.conditions
 
+# Internode VPC FW rule
   - name: inter-node-fwrule
     base:
       apiVersion: compute.gcp.crossplane.io/v1alpha1
@@ -151,6 +157,7 @@ spec:
       fromFieldPath: status.conditions
       toFieldPath: status.network.clusterEgressFw.conditions
 
+# Webhook VPC FW rule
   - name: webhooks-fwrule
     base:
       apiVersion: compute.gcp.crossplane.io/v1alpha1
@@ -216,6 +223,7 @@ spec:
       fromFieldPath: status.conditions
       toFieldPath: status.network.webhooksFw.conditions
 
+# VPC router and nat
   - name: router
     base:
       apiVersion: compute.gcp.crossplane.io/v1alpha1
@@ -231,6 +239,8 @@ spec:
     - type: PatchSet
       patchSetName: name
     - type: PatchSet
+      patchSetName: external-name
+    - type: PatchSet
       patchSetName: providerConfig
     - type: PatchSet
       patchSetName: metadata
@@ -240,7 +250,7 @@ spec:
       transforms:
       - type: map
         map:
-          regional-us-central: us-central1
+          us-central-zone: us-central1
           us-central: us-central1
           us-east: us-east1
           us-west: us-west1
@@ -258,6 +268,7 @@ spec:
       fromFieldPath: status.conditions
       toFieldPath: status.network.router.conditions
 
+# KMS keyring
   - name: kms-keyring
     base:
       apiVersion: kms.gcp.crossplane.io/v1alpha1
@@ -270,6 +281,9 @@ spec:
       patchSetName: name
     - type: PatchSet
       patchSetName: metadata
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.claimRef.namespace
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
     - type: PatchSet
       patchSetName: providerConfig
     - type: FromCompositeFieldPath
@@ -278,7 +292,7 @@ spec:
       transforms:
       - type: map
         map:
-          regional-us-central: us-central1
+          us-central-zone: us-central1
           us-central: us-central1
           us-east: us-east1
           us-west: us-west1
@@ -289,6 +303,7 @@ spec:
       fromFieldPath: status.conditions
       toFieldPath: status.kms.keyRing.conditions
 
+# KMS crypto key
   - name: kms-crypto-key
     base:
       apiVersion: kms.gcp.crossplane.io/v1alpha1
@@ -300,21 +315,18 @@ spec:
             matchControllerRef: true
     patches:
     - type: PatchSet
-      patchSetName: metadata
+      patchSetName: name
     - type: PatchSet
-      patchSetName: providerConfig
-    - type: CombineFromComposite
-      combine:
-        variables:
-        - fromFieldPath: spec.claimRef.namespace
-        - fromFieldPath: spec.claimRef.name
-        strategy: string
-        string:
-          fmt: "%s-%s"
-      toFieldPath: metadata.name
+      patchSetName: metadata
     - type: FromCompositeFieldPath
       fromFieldPath: spec.claimRef.name
       toFieldPath: metadata.annotations[crossplane.io/external-name]
+      transforms:
+      - type: string
+        string:
+          fmt: "%s-cluster"
+    - type: PatchSet
+      patchSetName: providerConfig
     - type: ToCompositeFieldPath
       fromFieldPath: status.atProvider.name
       toFieldPath: status.kms.cryptoKey.name
@@ -322,6 +334,7 @@ spec:
       fromFieldPath: status.conditions
       toFieldPath: status.kms.cryptoKey.conditions
 
+ # KMS crypto key policy
   - name: kms-key-policy
     base:
       apiVersion: kms.gcp.crossplane.io/v1alpha1
@@ -337,6 +350,8 @@ spec:
     patches:
     - type: PatchSet
       patchSetName: name
+    - type: PatchSet
+      patchSetName: external-name
     - type: PatchSet
       patchSetName: metadata
     - type: PatchSet
@@ -363,6 +378,7 @@ spec:
       fromFieldPath: status.conditions
       toFieldPath: status.kms.cryptoKeyPolicy.conditions
 
+# GKE cluster
   - name: cluster
     base:
       apiVersion: container.gcp.crossplane.io/v1beta2
@@ -379,6 +395,8 @@ spec:
             horizontalPodAutoscaling:
               disabled: false
             httpLoadBalancing:
+              disabled: false
+            networkPolicyConfig:
               disabled: false
           binaryAuthorization:
             enabled: true
@@ -398,23 +416,29 @@ spec:
               dailyMaintenanceWindow:
                 startTime: 06:00
           masterAuthorizedNetworksConfig:
-            enabled: false
+            enabled: 
             cidrBlocks: []
           networkConfig:
             enableIntraNodeVisibility: true
-            datapathProvider: ADVANCED_DATAPATH
+            datapathProvider: DATAPATH_PROVIDER_UNSPECIFIED
+          networkPolicy:
+            enabled: true
           networkSelector:
             matchControllerRef: true
           privateClusterConfig:
             masterIpv4CidrBlock:
             enablePrivateNodes: true
+            masterGlobalAccessConfig:
+              enabled: true
           resourceLabels:
-            class: standard
+            class: simple
           releaseChannel:
             channel: STABLE
     patches:
     - type: PatchSet
       patchSetName: name
+    - type: PatchSet
+      patchSetName: external-name
     - type: PatchSet
       patchSetName: metadata
     - type: PatchSet
@@ -434,7 +458,7 @@ spec:
       transforms:
       - type: map
         map:
-          regional-us-central: us-central1-c
+          us-central-zone: us-central1
           us-central: us-central1
           us-east: us-east1
           us-west: us-west1
@@ -448,7 +472,7 @@ spec:
         - fromFieldPath: spec.claimRef.name
         strategy: string
         string:
-          fmt: "%s-%s-cluster"
+          fmt: "%s-%s"
       toFieldPath: spec.forProvider.ipAllocationPolicy.subnetworkName
     - type: FromCompositeFieldPath
       fromFieldPath: spec.parameters.nodeCidr
@@ -511,6 +535,7 @@ spec:
       fieldPath: "status.atProvider.status"
       matchString: "RUNNING"
 
+# GKE default nodepool
   - name: nodepool
     base:
       apiVersion: container.gcp.crossplane.io/v1beta1
@@ -578,6 +603,9 @@ spec:
         map:
           small: e2-medium
           medium: n2-standard-4
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.preemptible
+      toFieldPath: spec.forProvider.config.preemptible
     - type: CombineFromComposite
       combine:
         variables:
@@ -598,7 +626,7 @@ spec:
       fieldPath: status.atProvider.status
       matchString: RUNNING
 
-  
+# Cluster Kubernetes providerconfig
   - name: kubernetes-config
     base:
       apiVersion: kubernetes.crossplane.io/v1alpha1
@@ -647,6 +675,7 @@ spec:
     readinessChecks:
     - type: None
 
+# Cluster Helm providerconfig
   - name: helm-config
     base:
       apiVersion: helm.crossplane.io/v1beta1
@@ -694,3 +723,306 @@ spec:
       toFieldPath: spec.identity.secretRef.key
     readinessChecks:
     - type: None
+
+# Config-Connector service account
+  - name: config-connector-service-account
+    base:
+      apiVersion: iam.gcp.crossplane.io/v1alpha1
+      kind: ServiceAccount
+      spec:
+        forProvider:
+          displayName:
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: providerConfig
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-config-connector"
+      toFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-config-connector"
+      toFieldPath: metadata.annotations[crossplane.io/external-name]
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s Config Connector"
+      toFieldPath: spec.forProvider.displayName
+
+# Config-Connector service account policy
+  - name: config-connector-service-account-policy
+    base:
+      apiVersion: iam.gcp.crossplane.io/v1alpha1
+      kind: ServiceAccountPolicy
+      spec:
+        forProvider:
+          policy:
+            bindings:
+            - role: "roles/iam.workloadIdentityUser"
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: PatchSet
+      patchSetName: providerConfig
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-config-connector"
+      toFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-config-connector"
+      toFieldPath: spec.forProvider.serviceAccountRef.name
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.google.project.id
+      toFieldPath: spec.forProvider.policy.bindings[0].members[0]
+      transforms:
+      - type: string
+        string:
+          fmt: "serviceAccount:%s.svc.id.goog[cnrm-system/cnrm-controller-manager]"
+      policy:
+        fromFieldPath: Required
+
+# Config-Connector kubernetes config
+  - name: config-connector-kubernetes-config
+    base:
+      apiVersion: kubernetes.crossplane.io/v1alpha1
+      kind: Object
+      spec:
+        forProvider:
+          manifest:
+            apiVersion: core.cnrm.cloud.google.com/v1beta1
+            kind: ConfigConnector
+            metadata:
+              name: configconnector.core.cnrm.cloud.google.com
+            spec:
+              mode: cluster
+              googleServiceAccount:
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-config-connector"
+      toFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-cluster"
+      toFieldPath: spec.providerConfigRef.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        - fromFieldPath: spec.parameters.google.project.id
+        strategy: string
+        string:
+          fmt: "%s-%s-config-connector@%s.iam.gserviceaccount.com"
+      toFieldPath: spec.forProvider.manifest.spec.googleServiceAccount
+      policy:
+        fromFieldPath: Required
+
+# OPA-Gatekeeper chart
+  - name: opa-gatekeeper
+    base:
+      apiVersion: helm.crossplane.io/v1beta1
+      kind: Release
+      metadata:
+        annotations:
+          crossplane.io/external-name: opa-gatekeeper
+      spec:
+        forProvider:
+          chart:
+            name: gatekeeper
+            repository: https://open-policy-agent.github.io/gatekeeper/charts
+            version: "3.10.0"
+          namespace: gatekeeper-system
+          wait: true
+          waitTimeout: 30m
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-opa-gatekeeper"
+      toFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-cluster"
+      toFieldPath: spec.providerConfigRef.name
+
+# Prometheus chart
+  - name: kube-prometheus-stack
+    base:
+      apiVersion: helm.crossplane.io/v1beta1
+      kind: Release
+      metadata:
+        annotations:
+          crossplane.io/external-name: kube-prometheus-stack
+      spec:
+        forProvider:
+          chart:
+            name: kube-prometheus-stack
+            repository: https://prometheus-community.github.io/helm-charts
+            version: 41.7.0
+          namespace: monitoring
+          wait: true
+          set:
+          - name: grafana.enabled
+            value: "false"
+          - name: grafana.forceDeployDatasources
+            value: "true"
+          - name: grafana.forceDeployDashboards
+            value: "true"
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-kube-prometheus-stack"
+      toFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-cluster"
+      toFieldPath: spec.providerConfigRef.name
+
+# Loki chart
+  - name: loki-stack
+    base:
+      apiVersion: helm.crossplane.io/v1beta1
+      kind: Release
+      metadata:
+        annotations:
+          crossplane.io/external-name: loki-stack
+      spec:
+        forProvider:
+          chart:
+            name: loki-stack
+            repository: https://grafana.github.io/helm-charts
+            version: 2.8.3
+          namespace: monitoring
+          wait: true
+          set:
+          - name: grafana.enabled
+            value: "false"
+          - name: loki.isDefault
+            value: "false"
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-loki-stack"
+      toFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-cluster"
+      toFieldPath: spec.providerConfigRef.name
+
+# Grafana chart
+  - name: grafana
+    base:
+      apiVersion: helm.crossplane.io/v1beta1
+      kind: Release
+      metadata:
+        annotations:
+          crossplane.io/external-name: grafana
+      spec:
+        forProvider:
+          chart:
+            name: grafana
+            repository: https://grafana.github.io/helm-charts
+            version: 6.43.1
+          namespace: monitoring
+          wait: true
+          set:
+          - name: sidecar.datasources.enabled
+            value: "true"
+          - name: sidecar.dashboards.enabled
+            value: "true"
+    patches:
+    - type: PatchSet
+      patchSetName: metadata
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-grafana"
+      toFieldPath: metadata.name
+    - type: CombineFromComposite
+      combine:
+        variables:
+        - fromFieldPath: spec.claimRef.namespace
+        - fromFieldPath: spec.claimRef.name
+        strategy: string
+        string:
+          fmt: "%s-%s-cluster"
+      toFieldPath: spec.providerConfigRef.name
