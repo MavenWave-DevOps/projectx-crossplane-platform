@@ -1,0 +1,99 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: peered-network.platform.projectx.mavenwave.dev
+spec:
+  group: platform.projectx.mavenwave.dev
+  names:
+    kind: Peered-Network
+    plural: Peered-Networks
+  connectionSecretKeys:
+  - hostname
+  defaultCompositionRef:
+    name: gcp-standard-peered-network-platform-projectx
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          type: object
+          properties:
+            parameters:
+              type: object:
+              properties:
+                routingMode:
+                  type: string
+                  enum:
+                  - GLOBAL
+                  - REGIONAL
+                region:
+                  type: string
+                  enum:
+                  - regional-us-central
+                  - us-central
+                  - us-east
+                  - us-west
+                  default: us-central
+                autoCreateSubnetworks:
+                  type: boolean
+                  description: Whether or not subnet is auto created
+                  default: false
+                ipCidrRange:
+                  type: string
+                  default: 192.168.0.0/24
+                privateIpGoogleAccess:
+                  type: boolean
+                  default: true
+                secondaryIpRanges:
+                  type: array
+                    items:
+                      type: object
+                      properties:
+                        rangeName:
+                          type: string
+                          description: Name for ipCidrRange
+                        ipCidrRange:
+                          type: string
+                          description: Must be specified in CIDR notation
+                      required:
+                      - rangeName
+                      - ipCidrRange
+                addressType:
+                  type: string
+                  enum:
+                  - INTERNAL
+                  - EXTERNAL
+                  default: INTERNAL
+                purpose:
+                  type: string
+                  enum:
+                  - VPC_PEERING
+                  - NAT_AUTO
+                  - IPSEC_INTERCONNECT
+                  - SHARED_LOADBALANCER_VIP
+                  - PRIVATE_SERVICE_CONNECT
+                  default: VPC_PEERING
+                prefixLength:
+                  type: number
+                  default: 16
+                parent:
+                  type: string
+                  default: services/servicenetworking.googleapis.com
+                reservedPeeringRanges:
+                  type: array
+                  items:
+                    type: string
+                    description: Pairing to address definition
+              required:
+              - routingMode
+          required:
+          - parameters
+        status:
+          type: object
+          properties:
+            address:
+              description: Address of VPC network
+              type: string

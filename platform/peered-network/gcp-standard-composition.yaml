@@ -1,0 +1,15 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: gcp-standard-peered-network-platform-projectx
+  labels:
+    provider: gcp
+    class: standard
+    crossplane.io/xrd: networks.platform.projectx.mavenwave.dev
+spec:
+  compositeTypeRef:
+    apiVersion: platform.projectx.mavenwave.dev/v1alpha1
+    kind: Peered-Network
+  writeConnectionSecretsToNamespace: crossplane-system
+  patchSets:
+    
