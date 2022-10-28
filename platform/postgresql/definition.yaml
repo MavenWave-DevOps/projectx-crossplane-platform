@@ -1,0 +1,47 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: postgresqlinstances.platform.projectx.mavenwave.dev
+
+spec:
+  group: platform.projectx.mavenwave.dev
+  names: 
+    kind: PostgreSQLInstance
+    plural: PostgreSQLInstances
+  claimNames:
+    kind: PostgreSQLInstanceClaim
+    plural: PostgreSQLInstanceClaims
+  connectionSecretKeys:
+  - hostname
+  defaultCompositionRef:
+    name: gcp-standard-projectx-peered-network
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+  
+  schema:
+    openAPIV3Schema:
+      type: object
+      properties:
+        spec:
+          type: object
+          properties:
+            parameters:
+              type: object
+              properties:
+                privateNetwork:
+                  type: string
+                  description: Network that has VPC_PEERING enabled
+              required:
+              - privateNetwork
+          required:
+          - parameters
+
+        status:
+          type: object
+          properties:
+            address:
+              description: Address of this PostgreSQL server
+              type: string
+  

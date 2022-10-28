@@ -1,0 +1,15 @@
+---
+apiVersion: platform.projectx.mavenwave.dev/v1alpha1
+kind: PostgreSQLInstanceClaim
+metadata:
+  name: demo
+  namespace: a-team
+spec:
+  compositionSelector:
+    matchLabels:
+      provider: gcp
+  writeConnectionSecretToRef:
+    name: a-team-demo
+  parameters:
+    privateNetwork: projects/px-mike-project-hje/global/networks/sample-vpc
+

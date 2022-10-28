@@ -1,0 +1,45 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: postgresql
+  labels: postgresqlinstance.platform.projectx.mavenwave.dev
+  provider: gcp
+
+spec:
+  compositeTypeRef:
+    apiVersion: platofom.projectx.mavenwave.dev
+    kind: PostgresqlInstance
+  writeConnectionSecretsToNamespace: crossplane-system
+  resources:
+  - name: cloudsqlinstance
+    base:
+      apiVersion: database.gcp.crossplane.io/v1beta1
+      kind: CloudSQLInstance
+      spec:
+        forProvider:
+          databaseVersion: POSTGRES_13
+          region: us-central1
+          settings:
+            tier: db-custom-1-3840
+            ipConfiguration:
+              ipv4Enabled: true
+              
+    patches:
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.size
+      toFieldPath: spec.forProvider.settings.tier
+      policy:
+        fromFieldPath: Required
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.ipConfiguration
+      toFieldPath: spec.forProvider.settings.ipConfiguration.privateNetwork
+      policy:
+        fromFieldPath: Required
+    
+    connectionDetails:
+    - name: hostname
+      fromConnectionServiceKey: hostname
+    
+    readinessChecks:
+    - type: None
+
