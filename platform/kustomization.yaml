@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
 - controlplane/
 - cluster/
+- database/
