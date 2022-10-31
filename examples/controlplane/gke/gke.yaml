@@ -24,4 +24,4 @@ spec:
     identity:
       source: Secret
       secretRefName: k8s-default
-     
+

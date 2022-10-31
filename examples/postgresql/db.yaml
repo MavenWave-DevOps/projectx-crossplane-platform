@@ -1,6 +1,6 @@
 ---
 apiVersion: platform.projectx.mavenwave.dev/v1alpha1
-kind: PostgreSQLInstanceClaim
+kind: DatabaseClaim
 metadata:
   name: demo
   namespace: a-team

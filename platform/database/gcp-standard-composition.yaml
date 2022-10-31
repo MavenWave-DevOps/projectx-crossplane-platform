@@ -1,14 +1,16 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: postgresql
-  labels: postgresqlinstance.platform.projectx.mavenwave.dev
-  provider: gcp
+  name: gcp-standard-projectx-platform-database
+  labels:
+    crossplane.io/xrd: databases.platform.projectx.mavenwave.dev
+    provider: gcp
+    class: standard
 
 spec:
   compositeTypeRef:
     apiVersion: platofom.projectx.mavenwave.dev
-    kind: PostgresqlInstance
+    kind: Database
   writeConnectionSecretsToNamespace: crossplane-system
   resources:
   - name: cloudsqlinstance
@@ -37,9 +39,10 @@ spec:
         fromFieldPath: Required
     
     connectionDetails:
-    - name: hostname
-      fromConnectionServiceKey: hostname
-    
+    - name: kubeconfig
+      fromConnectionSecretKey: kubeconfig
     readinessChecks:
-    - type: None
+    - type: MatchString
+      fieldPath: "status.atProvider.status"
+      matchString: "RUNNING"
 
