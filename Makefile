@@ -129,7 +129,7 @@ delete-cluster:
 
 ## Install crossplane onto K3D cluster
 install-crossplane: install-helm
-	${HELM} upgrade --install --repo https://charts.crossplane.io/stable --version v1.9.1 --create-namespace --namespace crossplane-system crossplane crossplane --values ${MKFILEDIR}helm/crossplane/values.yaml --wait
+	${HELM} upgrade --install --repo https://charts.crossplane.io/stable --version v1.10.0 --create-namespace --namespace crossplane-system crossplane crossplane --values ${MKFILEDIR}helm/crossplane/values.yaml --wait
 
 ## Install platform CRDs in cluster
 install: build install-kubectl
