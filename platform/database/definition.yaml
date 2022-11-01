@@ -25,6 +25,8 @@ spec:
         properties:
           spec: 
             type: object
+            required:
+            - parameters
             properties:
               parameters:
                 type: object
@@ -34,8 +36,6 @@ spec:
                     description: Network that has VPC_PEERING enabled
                 required:
                 - privateNetwork
-            required:
-            - parameters
 
         status:
           type: object

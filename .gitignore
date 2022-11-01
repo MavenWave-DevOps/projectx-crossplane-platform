@@ -5,3 +5,4 @@ hacking/examples/overlays/local/*
 **.xpkg
 build
 .work
+gke_gcloud_auth_plugin_cache

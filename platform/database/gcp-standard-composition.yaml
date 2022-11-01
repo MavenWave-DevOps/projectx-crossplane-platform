@@ -9,7 +9,7 @@ metadata:
 
 spec:
   compositeTypeRef:
-    apiVersion: platofom.projectx.mavenwave.dev
+    apiVersion: platofom.projectx.mavenwave.dev/v1alpha1
     kind: Database
   writeConnectionSecretsToNamespace: crossplane-system
   resources:
@@ -45,4 +45,3 @@ spec:
     - type: MatchString
       fieldPath: "status.atProvider.status"
       matchString: "RUNNING"
-
