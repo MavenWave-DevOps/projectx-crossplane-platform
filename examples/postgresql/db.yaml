@@ -2,7 +2,7 @@
 apiVersion: platform.projectx.mavenwave.dev/v1alpha1
 kind: DatabaseClaim
 metadata:
-  name: platform-ref-db-a-team
+  name: platform-ref-db
   namespace: a-team
   annotations:
     crossplane.io/external-name: production-db-0
