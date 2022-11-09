@@ -18,6 +18,8 @@ spec:
       - type: FromCompositeFieldPath
         fromFieldPath: spec.claimRef.namespace
         toFieldPath: spec.providerConfigRef.name
+    - name: name
+      patches:
       - type: CombineFromComposite
         combine:
           variables:
@@ -27,6 +29,11 @@ spec:
           string:
             fmt: "%s-%s"
         toFieldPath: metadata.name
+    - name: networkRef
+      patches:
+      - type: FromCompositeFieldPath
+        fromFieldPath: spec.parameters.networkRef.name
+        toFieldPath: spec.forProvider.networkRef.name
   resources:
     - name: PrivateIPAddress
       base:
@@ -42,8 +49,8 @@ spec:
           patchSetName: name
         - type: PatchSet
           patchSetName: providerConfig
-        - fromFieldPath: spec.parameters.networkRef.name
-          toFieldPath: spec.forProvider.networkRef.name
+        - type: PatchSet
+          patchSetName: networkRef
         - toFieldPath: status.atProvider.id
           fromFieldPath: status.GlobalAddress.id
         - toFieldPath: status.atProvider.conditions.status
@@ -64,8 +71,8 @@ spec:
           patchSetName: name
         - type: PatchSet
           patchSetName: providerConfig
-        - fromFieldPath: spec.parameters.networkRef.name
-          toFieldPath: spec.forProvider.networkRef.name
+        - type: PatchSet
+          patchSetName: networkRef
 
     - name: DBInstance
       base:
