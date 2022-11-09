@@ -1,7 +1,7 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: gcp-standard-projectx-platform-database
+  name: gcp-standard-database-platform-projectx
   labels:
     crossplane.io/xrd: databases.platform.projectx.mavenwave.dev
     provider: gcp
@@ -9,39 +9,81 @@ metadata:
 
 spec:
   compositeTypeRef:
-    apiVersion: platofom.projectx.mavenwave.dev/v1alpha1
+    apiVersion: platform.projectx.mavenwave.dev/v1alpha1
     kind: Database
   writeConnectionSecretsToNamespace: crossplane-system
+  patchSets:
+    - name: providerConfig
+      patches:
+      - type: FromCompositeFieldPath
+        fromFieldPath: spec.claimRef.namespace
+        toFieldPath: spec.providerConfigRef.name
   resources:
-  - name: cloudsqlinstance
-    base:
-      apiVersion: database.gcp.crossplane.io/v1beta1
-      kind: CloudSQLInstance
-      spec:
-        forProvider:
-          databaseVersion: POSTGRES_13
-          region: us-central1
-          settings:
-            tier: db-custom-1-3840
-            ipConfiguration:
-              ipv4Enabled: true
-              
-    patches:
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.size
-      toFieldPath: spec.forProvider.settings.tier
-      policy:
-        fromFieldPath: Required
-    - type: FromCompositeFieldPath
-      fromFieldPath: spec.parameters.ipConfiguration
-      toFieldPath: spec.forProvider.settings.ipConfiguration.privateNetwork
-      policy:
-        fromFieldPath: Required
-    
-    connectionDetails:
-    - name: kubeconfig
-      fromConnectionSecretKey: kubeconfig
-    readinessChecks:
-    - type: MatchString
-      fieldPath: "status.atProvider.status"
-      matchString: "RUNNING"
+    - name: PrivateIPAddress
+      base:
+        apiVersion: compute.gcp.crossplane.io/v1beta1
+        kind: GlobalAddress
+        spec:
+          forProvider:
+            addressType: INTERNAL
+            prefixLength: 16
+            purpose: VPC_PEERING
+      patches:
+        - fromFieldPath: spec.parameters.networkRef.name
+          toFieldPath: spec.forProvider.networkRef.name
+        - toFieldPath: status.atProvider.id
+          fromFieldPath: status.GlobalAddress.id
+        - toFieldPath: status.atProvider.conditions.status
+          fromFieldPath: status.GlobalAddress.conditions[0].status
+        - type: PatchSet
+          patchSetName: providerConfig
+
+    - name: PrivateConnection
+      base:
+        apiVersion: servicenetworking.gcp.crossplane.io/v1beta1
+        kind: Connection
+        spec:
+          forProvider:
+            parent: services/servicenetworking.googleapis.com
+            reservedPeeringRangesSelector:
+              matchControllerRef: true
+            service: servicenetworking.googleapis.com
+      patches:
+        - fromFieldPath: spec.parameters.networkRef.name
+          toFieldPath: spec.forProvider.networkRef.name
+        - type: PatchSet
+          patchSetName: providerConfig
+
+    - name: DBInstance
+      base:
+        apiVersion: database.gcp.crossplane.io/v1beta1
+        kind: CloudSQLInstance
+        spec:
+          forProvider:
+            databaseVersion: POSTGRES_13
+            deletionProtection: false
+            region: us-central1
+            settings:
+              dataDiskSizeGb: 20
+              tier: db-f1-micro
+              ipConfiguration:
+                ipv4Enabled: false
+      patches:
+        - fromFieldPath: metadata.uid
+          toFieldPath: spec.writeConnectionSecretToRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-gcp-postgresql"
+        - fromFieldPath: spec.writeConnectionSecretToRef.namespace
+          toFieldPath: spec.writeConnectionSecretToRef.namespace
+        - fromFieldPath: spec.parameters.storageGB
+          toFieldPath: spec.forProvider.settings.dataDiskSizeGb
+        - fromFieldPath: spec.parameters.network
+          toFieldPath: spec.forProvider.settings.ipConfiguration.privateNetwork
+        - type: PatchSet
+          patchSetName: providerConfig
+
+      connectionDetails:
+      - name: kubeconfig
+        fromConnectionSecretKey: kubeconfig

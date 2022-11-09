@@ -2,14 +2,35 @@
 apiVersion: platform.projectx.mavenwave.dev/v1alpha1
 kind: DatabaseClaim
 metadata:
-  name: demo
+  name: platform-ref-db-a-team
   namespace: a-team
+  annotations:
+    crossplane.io/external-name: production-db-0
+  labels:
+    provider: gcp
+    class: standard
 spec:
-  compositionSelector:
-    matchLabels:
-      provider: gcp
-  writeConnectionSecretToRef:
-    name: a-team-demo
+  claimRef:
+    providerConfigRef: a-team
   parameters:
-    privateNetwork: projects/px-mike-project-hje/global/networks/sample-vpc
+    storageGB: 10
+    passwordSecretRef:
+      namespace: a-team
+      name: psqlsecret
+      key: password
+    networkRef:
+      name: a-team-dev
+    network: projects/px-autopilot-test/global/networks/a-team-dev
+  writeConnectionSecretToRef:
+    name: a-team-dev
+
+---
+apiVersion: v1
+data:
+  password: dXBiMHVuZHIwY2s1ITMxMzM3
+kind: Secret
+metadata:
+  name: psqlsecret
+  namespace: a-team
+type: Opaque
 

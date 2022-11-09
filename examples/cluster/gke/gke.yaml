@@ -13,8 +13,8 @@ spec:
   parameters:
     google:
       project:
-        id: bradw-nextgen-devops
-        number: "809429613600"
+        id: px-autopilot-test
+        number: "438443399040"
     identity: {}
     # network:
     #   nodes:

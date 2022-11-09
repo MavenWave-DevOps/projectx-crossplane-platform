@@ -17,7 +17,7 @@ brew install yq
 ## Setup DevOps Control Plane
 * Clone this repository
 * ```sh
-  make create
+  make local-dev
   ```
 * ```sh
   export KUBECONFIG=$PWD/kubeconfig
@@ -29,6 +29,10 @@ brew install yq
   * Set Kubeconfig environment variable
 * ```sh
   make setup PROJECTID=<gcp project id> CPNAME=<control plane name> TENANT=<tenant id>
+  ```
+* Install providers
+  ```
+  make install
   ```
 ## Destroy Local Control Plane
 * ```sh

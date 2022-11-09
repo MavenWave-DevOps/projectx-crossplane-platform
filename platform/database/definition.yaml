@@ -2,19 +2,16 @@ apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
   name: databases.platform.projectx.mavenwave.dev
-
 spec:
   group: platform.projectx.mavenwave.dev
   names: 
     kind: Database
-    plural: Databases
+    plural: databases
   claimNames:
     kind: DatabaseClaim
     plural: databaseclaims
   connectionSecretKeys:
   - kubeconfig
-  defaultCompositionRef:
-    name: gcp-standard-projectx-database
   versions:
   - name: v1alpha1
     served: true
@@ -25,38 +22,65 @@ spec:
         properties:
           spec: 
             type: object
-            required:
-            - parameters
             properties:
+              claimRef:
+                type: object
+                properties:
+                  providerConfigRef:
+                    type: string
               parameters:
                 type: object
                 properties:
-                  privateNetwork:
-                    type: string
-                    description: Network that has VPC_PEERING enabled
-                required:
-                - privateNetwork
-
-        status:
-          type: object
-          properties:
-            address:
-              description: Address of this PostgreSQL server
-              type: string
-              conditions:
-                type: array
-                items:
-                  type: object
-                  x-kubernetes-preserve-unknown-fields: true
-
-            crossplane:
-              type: object
-              properties:
-                conditions:
-                  type: array
-                  items:
+                  storageGB:
+                    type: integer
+                  passwordSecretRef:
                     type: object
-                    x-kubernetes-preserve-unknown-fields: true
-                google:
-                  type: object
-                  properties:
+                    description: "A reference to the Secret object containing database password"
+                    properties:
+                      namespace:
+                        type: string
+                      name:
+                        type: string
+                      key:
+                        type: string
+                    required:
+                    - namespace
+                    - name
+                    - key
+                  networkRef:
+                    type: object
+                    description: "A reference to the Network this postgres should create"
+                    properties:
+                      name:
+                        type: string
+                    required:
+                    - name
+                  network:
+                    type: string
+                    description: "Name of network path for pg database"
+                required:
+                  - storageGB
+                  - networkRef
+                  - network
+                  - passwordSecretRef
+            required:
+            - parameters
+          status:
+            type: object
+            properties:
+              GlobalAddress:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  conditions:
+                    type: array
+                    items:
+                      type: object
+                      lastTransitionTime: 
+                        type: string
+                      reason:
+                        type: string
+                      status:
+                        type: string
+
