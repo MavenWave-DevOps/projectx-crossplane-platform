@@ -47,20 +47,11 @@ spec:
                     - namespace
                     - name
                     - key
-                  networkRef:
-                    type: object
-                    description: "A reference to the Network this postgres should create"
-                    properties:
-                      name:
-                        type: string
-                    required:
-                    - name
                   network:
                     type: string
                     description: "Name of network path for pg database"
                 required:
                   - storageGB
-                  - networkRef
                   - network
                   - passwordSecretRef
             required:
@@ -68,7 +59,7 @@ spec:
           status:
             type: object
             properties:
-              GlobalAddress:
+              globalAddress:
                 type: object
                 properties:
                   id:
@@ -83,4 +74,32 @@ spec:
                         type: string
                       status:
                         type: string
+                connection:
+                  type: object
+                  properties:
+                    conditions:
+                      type: array
+                      items: 
+                        lastTransitionTime:
+                          type: string
+                        reason:
+                          type: string
+                        status: 
+                          type: string
+                        type:
+                          type: string
+                cloudSQLInstance:
+                  type: object
+                  properties:
+                    conditions:
+                      type: array
+                      items: 
+                        lastTransitionTime:
+                          type: string
+                        reason:
+                          type: string
+                        status: 
+                          type: string
+                        type:
+                          type: string
 

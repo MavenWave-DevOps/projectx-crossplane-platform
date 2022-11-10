@@ -18,9 +18,7 @@ spec:
       namespace: a-team
       name: psqlsecret
       key: password
-    networkRef:
-      name: a-team-dev
-    network: projects/px-autopilot-test/global/networks/a-team-dev
+    network: projects/px-autopilot-test/global/networks/a-team-demo
   writeConnectionSecretToRef:
     name: a-team-dev
 
