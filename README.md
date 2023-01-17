@@ -7,17 +7,20 @@ This quick start will cover:
 * Destroying the kind cluster
 
 ## Requirements
+* GCP Project to provision resources
+  * Correct priveledges to create resources
 * Docker or Rancher Desktop
   * For Rancher Desktop: open kubernetes settings and disable kubernetes
 * yq
 ```
 brew install yq
 ```
+* Helpful: k9s installed
 
-## Setup DevOps Control Plane
+## Setup Crossplane in local cluster
 * Clone this repository
 * ```sh
-  make create
+  make local-dev
   ```
 * ```sh
   export KUBECONFIG=$PWD/kubeconfig
@@ -30,6 +33,8 @@ brew install yq
 * ```sh
   make setup PROJECTID=<gcp project id> TENANT=<tenant id>
   ```
+* Happy provisioning :)
+
 ## Destroy Local Control Plane
 * ```sh
   make destroy
