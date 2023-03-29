@@ -51,35 +51,6 @@ spec:
           fmt: "%s-%s"
       toFieldPath: metadata.labels[platform.tidalwave.mavenwave.dev/cluster]
   resources:
-# VPC
-  - name: network
-    base:
-      apiVersion: compute.gcp.crossplane.io/v1beta1
-      kind: Network
-      spec:
-        forProvider:
-          autoCreateSubnetworks: false
-          routingConfig:
-            routingMode: GLOBAL
-    patches:
-    - type: PatchSet
-      patchSetName: name
-    - type: PatchSet
-      patchSetName: external-name
-    - type: PatchSet
-      patchSetName: providerConfig
-    - type: PatchSet
-      patchSetName: metadata
-    - type: ToCompositeFieldPath
-      fromFieldPath: status.atProvider.id
-      toFieldPath: status.network.vpc.id
-    - type: ToCompositeFieldPath
-      fromFieldPath: status.atProvider.selfLink
-      toFieldPath: status.network.vpc.selfLink
-    - type: ToCompositeFieldPath
-      fromFieldPath: status.conditions
-      toFieldPath: status.network.vpc.conditions
-
 # Internode VPC FW rule
   - name: inter-node-fwrule
     base:
@@ -88,7 +59,7 @@ spec:
       spec:
         forProvider:
           networkSelector:
-            matchControllerRef: true
+            matchLabels:
           allowed:
           - IPProtocol: tcp
           - IPProtocol: udp
@@ -120,6 +91,11 @@ spec:
         string:
           fmt: "%s-%s-intra-cluster-egress"
       toFieldPath: metadata.annotations[crossplane.io/external-name]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.networkId
+      toFieldPath: spec.forProvider.networkSelector.matchLabels[platform.tidalwave.mavenwave.dev/network-id]
+      policy:
+        fromFieldPath: Required
     - type: CombineFromComposite
       combine:
         variables:
@@ -165,7 +141,7 @@ spec:
       spec:
         forProvider:
           networkSelector:
-            matchControllerRef: true
+            matchLabels:
           allowed:
           - IPProtocol: tcp
             ports:
@@ -196,6 +172,11 @@ spec:
         string:
           fmt: "%s-%s-webhooks"
       toFieldPath: metadata.annotations[crossplane.io/external-name]
+    - type: FromCompositeFieldPath
+      fromFieldPath: spec.parameters.networkId
+      toFieldPath: spec.forProvider.networkSelector.matchLabels[platform.tidalwave.mavenwave.dev/network-id]
+      policy:
+        fromFieldPath: Required
     - type: CombineFromComposite
       combine:
         variables:

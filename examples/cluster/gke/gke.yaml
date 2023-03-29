@@ -1,15 +1,31 @@
 ---
+apiVersion: compute.gcp.crossplane.io/v1beta1
+kind: Network
+metadata:
+  name: demo
+  namespace: example
+  labels:
+    platform.tidalwave.mavenwave.dev/network-id: default
+spec:
+  providerConfigRef:
+    name: example
+  forProvider:
+    autoCreateSubnetworks: false
+    routingConfig:
+      routingMode: GLOBAL
+---
 apiVersion: platform.tidalwave.mavenwave.dev/v1alpha1
 kind: ClusterClaim
 metadata:
-  name: example
+  name: demo
+  namespace: example
 spec:
   compositionSelector:
     matchLabels:
       provider: gcp
       class: simple
   writeConnectionSecretToRef:
-    name: dev-cluster
+    name: demo-cluster
   parameters:
     nodeMachineType: medium
     google:

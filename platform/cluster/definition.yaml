@@ -41,6 +41,10 @@ spec:
                     - us-west
                     default: us-central-zone
                     description: Resources region
+                  networkId:
+                    type: string
+                    description: Select network with label platform.tidalwave.mavenwave.dev/network-id
+                    default: default
                   controlPlaneIpv4CidrBlock:
                     type: string
                     description: The IP range in CIDR notation to use for the hosted master network
@@ -134,18 +138,6 @@ spec:
               network:
                 type: object
                 properties:
-                  vpc:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                      selfLink:
-                        type: string
-                      conditions:
-                        type: array
-                        items:
-                          type: object
-                          x-kubernetes-preserve-unknown-fields: true
                   clusterEgressFw:
                     type: object
                     properties:

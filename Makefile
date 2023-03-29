@@ -12,6 +12,7 @@ MKDIR = mkdir -p
 TAG ?= latest
 CONTAINER ?= ghcr.io/mavenwave-devops/projectx-crossplane-platform:${TAG}
 CREDS ?= $${HOME}/.config/gcloud/application_default_credentials.json
+NAMESPACE = example
 
 UNAME_S := $(shell uname -s)
 UNAME_P := $(shell uname -p)
@@ -140,25 +141,25 @@ local-dev: create-cluster install-crossplane install
 
 ## Create tenant namespace
 create-ns: install-kubectl
-	${KUBECTL} create ns ${TENANT} || true
+	${KUBECTL} create ns ${NAMESPACE} || true
 
 ## Delete Crossplane GCP provider secret
 delete-provider-secret:
-	${KUBECTL} -n ${TENANT} delete secret gcp-default || true ;\
-	${KUBECTL} -n ${TENANT} delete secret k8s-default || true
+	${KUBECTL} -n ${NAMESPACE} delete secret gcp-default || true ;\
+	${KUBECTL} -n ${NAMESPACE} delete secret k8s-default || true
 
 ## Create Crossplane GCP provider secret
 create-provider-secret: create-ns delete-provider-secret
-	${KUBECTL} -n ${TENANT} create secret generic gcp-default --from-file=credentials=${CREDS} ;\
-	${KUBECTL} -n ${TENANT} create secret generic k8s-default --from-file=credentials=${CREDS}
+	${KUBECTL} -n ${NAMESPACE} create secret generic gcp-default --from-file=credentials=${CREDS} ;\
+	${KUBECTL} -n ${NAMESPACE} create secret generic k8s-default --from-file=credentials=${CREDS}
 
 ## Create GCP providerconfig
 create-gcp-providerconfig:
-	yq e '(.spec.projectID |= "${PROJECTID}") | (.metadata.name |= "${TENANT}") | (.spec.credentials.secretRef.namespace |= "${TENANT}")' ${MKFILEDIR}manifests/provider-configs/gcp-provider.yaml | ${KUBECTL} apply -f - ;\
+	yq e '(.spec.projectID |= "${PROJECTID}")' ${MKFILEDIR}manifests/provider-configs/gcp-provider.yaml | ${KUBECTL} apply -f - ;\
 
 ## Create Helm providerconfig
 create-helm-providerconfig:
-	yq e '.metadata.name |= "${TENANT}"' ${MKFILEDIR}manifests/provider-configs/helm-provider.yaml | ${KUBECTL} apply -f -
+	${KUBECTL} apply -f ${MKFILEDIR}manifests/provider-configs/helm-provider.yaml
 
 ## Create providerconfigs
 create-providerconfigs: create-provider-secret create-gcp-providerconfig create-helm-providerconfig

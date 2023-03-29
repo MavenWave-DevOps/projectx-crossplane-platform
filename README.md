@@ -28,7 +28,7 @@ brew install yq
   ```
   * Set Kubeconfig environment variable
 * ```sh
-  make setup PROJECTID=<gcp project id> TENANT=<tenant id>
+  make setup PROJECTID=<gcp project id>
   ```
 ## Destroy Local Control Plane
 * ```sh
